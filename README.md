@@ -130,10 +130,13 @@ You don't download this app from a store. You open a link and add it to your dev
 **App link:** https://madhavlathigara.github.io/expense-app/
 
 ### iPhone
-1. Open the link in **Safari** (it must be Safari).
-2. Tap the **Share** button (the square with an arrow).
-3. Tap **Add to Home Screen**, then **Add**.
+1. Open **Safari** and go to **[madhavlathigara.github.io/expense-app](https://madhavlathigara.github.io/expense-app/)**.
+   Make sure you see the black & gold **Expenses** app, **not** this GitHub page.
+2. Tap the **Share** button (the square with an arrow). On newer iPhones it may be inside the **⋯** menu.
+3. Scroll down and tap **Add to Home Screen**. If you see **Open as Web App**, keep it on. Then tap **Add**.
 4. Open **Expenses** from your home screen. It opens full screen, like a normal app.
+
+> 💡 If you open the link from WhatsApp, Instagram or the GitHub app, it may open inside that app's browser, where "Add to Home Screen" is missing. Open it in **Safari** instead.
 
 ### Windows
 1. Open the link in **Microsoft Edge** (or Chrome).
