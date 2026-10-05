@@ -173,6 +173,13 @@ nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:re
   padding:8px 18px calc(18px + var(--sab));animation:up .2s ease}
 @media (min-width:700px){ .overlay{align-items:center} .sheet{border-radius:22px;padding-bottom:20px} }
 .grab{width:42px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 10px}
+.sheet{position:relative;overscroll-behavior:contain}
+.sheet-top{position:sticky;top:0;height:0;z-index:5}
+.sheet-x{position:absolute;right:-6px;top:4px;width:38px;height:38px;border-radius:50%;background:var(--pri-l);color:var(--text);
+  display:grid;place-items:center;box-shadow:0 1px 4px rgba(0,0,0,.12);transition:transform .12s ease}
+.sheet-x svg{width:18px;height:18px}
+.sheet-x:active{transform:scale(.88)}
+.sheet h3{padding-right:46px}
 .sheet h3{margin:0 0 14px;font-size:18px}
 @keyframes up{from{transform:translateY(30px);opacity:.4}to{transform:none;opacity:1}}
 @keyframes fade{from{opacity:0}to{opacity:1}}
@@ -811,7 +818,8 @@ let closeSheet = null;
 function openSheet(html, cls, onClose){
   if(closeSheet) closeSheet();
   const ov = document.createElement("div"); ov.className = "overlay";
-  ov.innerHTML = `<div class="sheet ${cls||""}" role="dialog" aria-modal="true"><div class="grab"></div>${html}</div>`;
+  const xBtn = cls==="full" ? "" : `<div class="sheet-top"><button class="sheet-x" aria-label="Close" title="Close"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>`;
+  ov.innerHTML = `<div class="sheet ${cls||""}" role="dialog" aria-modal="true">${xBtn}<div class="grab"></div>${html}</div>`;
   document.body.appendChild(ov); document.body.style.overflow="hidden";
   const close = () => {
     closeSheet=null; document.removeEventListener("keydown", onKey);
@@ -822,15 +830,36 @@ function openSheet(html, cls, onClose){
   };
   const onKey = (e) => { if(e.key==="Escape") close(); };
   document.addEventListener("keydown", onKey);
-  ov.addEventListener("click", (e)=>{ if(e.target===ov) close(); });
+  ov.addEventListener("click", (e)=>{ if(e.target===ov || e.target.closest(".sheet-x")) close(); });
+  // swipe the pop-up down to close it (drag from the top part)
+  const sh = ov.querySelector(".sheet");
+  if(cls!=="full"){
+    let y0 = null, dy = 0;
+    sh.addEventListener("touchstart", (e)=>{
+      const t = e.touches[0], top = sh.getBoundingClientRect().top;
+      y0 = (e.touches.length===1 && sh.scrollTop<=0 && t.clientY - top < 80) ? t.clientY : null; dy = 0;
+    }, {passive:true});
+    sh.addEventListener("touchmove", (e)=>{
+      if(y0===null) return;
+      dy = Math.max(0, e.touches[0].clientY - y0);
+      if(dy>0){ e.preventDefault(); sh.style.transition="none"; sh.style.transform = `translateY(${dy}px)`; }
+    }, {passive:false});
+    sh.addEventListener("touchend", ()=>{
+      if(y0===null) return; y0 = null;
+      if(dy > 90){ if(document.activeElement) document.activeElement.blur(); close(); }
+      else { sh.style.transition="transform .2s ease"; sh.style.transform=""; }
+    });
+  }
   closeSheet = close;
   return ov;
 }
 function ask(message, okLabel="OK", danger=false){
   return new Promise(res=>{
+    let done = false;
     const ov = openSheet(`<h3>${esc(message)}</h3><div class="grid2">
-      <button class="btn ghost" data-r="0">Cancel</button><button class="btn ${danger?"coral":"primary"}" data-r="1">${esc(okLabel)}</button></div>`);
-    ov.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{ closeSheet(); res(b.dataset.r==="1"); });
+      <button class="btn ghost" data-r="0">Cancel</button><button class="btn ${danger?"coral":"primary"}" data-r="1">${esc(okLabel)}</button></div>`,
+      "", ()=>{ if(!done){ done=true; res(false); } });
+    ov.querySelectorAll("[data-r]").forEach(b=>b.onclick=()=>{ if(done) return; done=true; res(b.dataset.r==="1"); closeSheet(); });
   });
 }
 
