@@ -2,7 +2,7 @@
 <html lang="en" data-theme="gold">
 <head>
 <meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>Expense Tracker</title>
 <meta name="description" content="Private daily expense tracker. Your data stays on your device.">
 <meta name="theme-color" content="#111114">
@@ -46,6 +46,7 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text)}
+html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* no double-tap zoom */
 body{font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   min-height:100vh;padding-bottom:calc(var(--nav-h) + var(--sab) + 16px);overscroll-behavior-y:none}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -1503,6 +1504,10 @@ window.addEventListener("beforeinstallprompt",(e)=>{ e.preventDefault(); deferre
 window.addEventListener("appinstalled",()=>{ D.settings.hideInstall=true; save(); render(); toast("App installed"); });
 // refresh "today" when the app comes back after midnight
 document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !closeSheet) render(); });
+
+/* ---------- no pinch-zoom on phones (feels like a normal app) ---------- */
+["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,(e)=>e.preventDefault(),{passive:false}));   // iPhone Safari pinch
+document.addEventListener("touchmove",(e)=>{ if(e.touches && e.touches.length>1) e.preventDefault(); },{passive:false});            // two-finger zoom
 
 if("serviceWorker" in navigator && location.protocol!=="file:"){
   navigator.serviceWorker.register("sw.js").catch(err=>console.warn("SW failed",err));
