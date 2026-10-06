@@ -60,12 +60,13 @@
 - See **Credits**, **Spent** and **Left** for every month.
 - Kept separate from your expenses.
 
-### 🛠️ Projects
-- Create a project, for example *"Smart plant monitor"*, with an optional budget.
-- Add expenses inside the project: what it was for, how much, how you paid.
-- Record **money received** for the project: who gave it (name) and the purpose.
-- See **Received**, **Spent** and **Balance** for each project.
-- **Money overview** chart: how much money is left, **who gave** and **who spent** how much, and **what it was spent on**.
+### 🎯 Projects
+- Create a project, for example *"Smart plant monitor"*, with an optional planned investment.
+- **Invest:** record money put in by you or by others, with the name and the payment method.
+- **Profit:** record money the project earns.
+- **Pay out:** record money paid out or credited to someone.
+- See **Invested**, **Profit** and **Paid out** for each project.
+- **Money overview:** a chart of who invested how much, the money flow (invested + profit → paid out / still in project), and each person's investments and pay outs.
 - Project money **stays inside the project**. It is not mixed with your daily spending.
 - Mark a project as completed when it is done.
 
