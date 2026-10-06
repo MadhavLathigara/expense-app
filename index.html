@@ -245,6 +245,34 @@ nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:re
 .pstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 6px}
 .pstats .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
 .pstats .v{font-size:clamp(15px,4.6vw,20px);font-weight:800;white-space:nowrap}
+/* project money overview */
+.pov h2{margin-bottom:6px}
+.pov-top{display:flex;align-items:center;gap:16px;margin:4px 0 6px}
+.donut{width:132px;height:132px;flex:none}
+.dn-t{font-size:11px;fill:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.5px}
+.dn-b{font-size:15px;font-weight:800;fill:var(--text)}
+.dn-b.cg{fill:var(--green)} .dn-b.cr{fill:var(--red)}
+.pov-legend{flex:1;min-width:0}
+.lg{display:flex;align-items:center;gap:8px;margin:6px 0;font-size:14px}
+.lg i{width:12px;height:12px;border-radius:4px;flex:none}
+.lg span{flex:1;color:var(--muted);min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lg b{white-space:nowrap}
+.sec-t{font-size:12px;font-weight:800;text-transform:uppercase;letter-spacing:.6px;color:var(--muted);margin:16px 0 8px;padding-top:12px;border-top:1px solid var(--line)}
+.sec-h{font-size:13px;font-weight:700;color:var(--muted);margin:6px 4px -6px}
+.who{padding:8px 0}
+.who + .who{border-top:1px dashed var(--line)}
+.who-h{display:flex;align-items:center;gap:10px;margin-bottom:6px}
+.who-n{font-weight:700;flex:1;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.av.sm{width:30px;height:30px;font-size:11px}
+.who-r{display:grid;grid-template-columns:52px minmax(0,1fr) auto;align-items:center;gap:10px;margin:5px 0;font-size:13px}
+.who-r > span{font-weight:700;font-size:12px}
+.who-r b{font-size:13.5px;white-space:nowrap}
+.item-r{grid-template-columns:minmax(0,40%) minmax(0,1fr) auto}
+.item-r > span{font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.item-r em{font-style:normal;color:var(--muted);font-weight:600}
+main.fresh .dn-seg{animation:dnIn .9s cubic-bezier(.2,.75,.2,1) both}
+@keyframes dnIn{from{stroke-dasharray:0 400}}
+@media (max-width:360px){ .pov-top{flex-direction:column;align-items:stretch;gap:8px} .donut{width:140px;height:140px;margin:0 auto} .btn{padding:12px 10px;font-size:14px} }
 /* home shortcut tiles */
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:left;box-shadow:var(--shadow);min-width:0}
@@ -1349,6 +1377,84 @@ function projectsView(){
   if(done.length) h += `<div class="day-h"><span>Completed</span></div><div class="notes-grid">${done.map(card).join("")}</div>`;
   return h;
 }
+/* ---------- Project money overview: who gave, who spent, where it went ---------- */
+const YOU = "You";
+function normWho(n){ n = (n||"").trim(); return (!n || /^(me|you|myself|self)$/i.test(n)) ? YOU : n; }
+function personColor(name){
+  if(name===YOU) return "var(--pri)";
+  let h=0; for(const ch of name.toLowerCase()) h=(h*31+ch.charCodeAt(0))>>>0;
+  return AV_COLORS[h % AV_COLORS.length];
+}
+function initials(name){ return name===YOU ? "You" : (name.trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "?"); }
+const ringMoney = (p) => Math.abs(p) >= 10000000 ? shortMoney(Math.abs(p)) : rup(Math.abs(p));   // short form for the middle of the circle
+function donut(segs, centerTop, centerBig, centerCls){
+  const R = 46, C = 2*Math.PI*R, total = segs.reduce((a,s)=>a+s.v,0) || 1;
+  let off = 0, arcs = "";
+  segs.filter(s=>s.v>0).forEach((s,i)=>{
+    const len = s.v/total*C;
+    arcs += `<circle class="dn-seg" cx="60" cy="60" r="${R}" fill="none" stroke="${s.c}" stroke-width="16"
+      stroke-dasharray="${len.toFixed(2)} ${(C-len).toFixed(2)}" stroke-dashoffset="${(-off).toFixed(2)}" style="animation-delay:${i*120}ms"><title>${esc(s.title || (s.label+": "+money(s.v)))}</title></circle>`;
+    off += len;
+  });
+  return `<svg class="donut" viewBox="0 0 120 120" role="img" aria-label="${esc(centerTop)} ${esc(centerBig)}">
+    <circle cx="60" cy="60" r="${R}" fill="none" stroke="var(--line)" stroke-width="16"/>
+    <g transform="rotate(-90 60 60)">${arcs}</g>
+    <text x="60" y="54" text-anchor="middle" class="dn-t">${esc(centerTop)}</text>
+    <text x="60" y="72" text-anchor="middle" class="dn-b ${centerCls||""}">${esc(centerBig)}</text></svg>`;
+}
+function projectOverview(pid){
+  const ex = pexpOf(pid), inc = pinOf(pid);
+  const spent = sum(ex), got = sum(inc), left = got - spent;
+  if(!ex.length && !inc.length) return "";
+  // people: who gave and who spent
+  const ppl = new Map();
+  const add = (name, k, v)=>{ const key = name.toLowerCase(); const r = ppl.get(key) || {name, gave:0, spent:0}; r[k] += v; ppl.set(key, r); };
+  inc.forEach(e=>add(normWho(e.name), "gave", e.amount));
+  ex.forEach(e=>add(normWho(e.by), "spent", e.amount));
+  const people = [...ppl.values()].sort((a,b)=> (b.gave+b.spent)-(a.gave+a.spent));
+  const maxP = Math.max(1, ...people.map(r=>Math.max(r.gave, r.spent)));
+  // donut + legend
+  let ring, legend;
+  if(got > 0){
+    const sp = Math.min(spent, got), over = spent > got;
+    ring = donut(over ? [{v:1, c:"var(--red)", title:"Spent "+money(spent-got)+" more than received"}]
+                      : [{v:sp, c:"var(--acc)", label:"Spent"}, {v:got-sp, c:"var(--green)", label:"Left"}],
+                 over ? "Over by" : "Left", ringMoney(over ? spent-got : left), over ? "cr" : "cg");
+    legend = `<div class="lg"><i style="background:var(--green)"></i><span>Received</span><b>${money(got)}</b></div>
+      <div class="lg"><i style="background:var(--acc)"></i><span>Spent</span><b>${money(spent)}</b></div>
+      <div class="lg"><i style="background:${left<0?"var(--red)":"transparent;border:2px solid var(--green)"}"></i><span>${left<0?"Over":"Left"}</span><b class="${left<0?"cr":"cg"}">${money(Math.abs(left))}</b></div>
+      <div class="small muted" style="margin-top:4px">${got? Math.round(Math.min(spent,got)/got*100) : 0}% of received money is used</div>`;
+  } else {
+    const sp = people.filter(r=>r.spent>0);
+    ring = donut(sp.map(r=>({v:r.spent, c:personColor(r.name), label:r.name})), "Spent", ringMoney(spent));
+    legend = sp.map(r=>`<div class="lg"><i style="background:${personColor(r.name)}"></i><span>${esc(r.name)}</span><b>${money(r.spent)}</b></div>`).join("")
+      + `<div class="small muted" style="margin-top:4px">Tap <b>Received</b> to add money given for this project.</div>`;
+  }
+  let h = `<div class="card pov"><h2>💸 Money overview</h2><div class="pov-top">${ring}<div class="pov-legend">${legend}</div></div>`;
+  // who gave / who spent
+  h += `<div class="sec-t">By person</div>`;
+  h += people.map(r=>{
+    return `<div class="who">
+      <div class="who-h"><div class="av sm" style="background:${personColor(r.name)}">${esc(initials(r.name))}</div>
+        <div class="who-n">${esc(r.name)}</div>
+</div>
+      ${r.gave ? `<div class="who-r"><span class="cg">Gave</span><div class="bar"><i style="width:${r.gave/maxP*100}%;background:var(--green)"></i></div><b>${money(r.gave)}</b></div>` : ""}
+      ${r.spent ? `<div class="who-r"><span class="cr">Spent</span><div class="bar"><i style="width:${r.spent/maxP*100}%;background:var(--acc)"></i></div><b>${money(r.spent)}</b></div>` : ""}
+      ${got && r.gave ? `<div class="small muted">${Math.round(r.gave/got*100)}% of all money received</div>` : ""}
+    </div>`;
+  }).join("");
+  // where the money went
+  if(ex.length){
+    const items = new Map();
+    ex.forEach(e=>{ const n = (e.what||"Other").trim(); const k = n.toLowerCase(); const r = items.get(k) || {n, v:0, c:0}; r.v += e.amount; r.c++; items.set(k, r); });
+    const top = [...items.values()].sort((a,b)=>b.v-a.v), maxI = top[0].v;
+    h += `<div class="sec-t">Spent on</div>` + top.slice(0,5).map(r=>`<div class="who-r item-r"><span>${esc(r.n)}${r.c>1?` <em>×${r.c}</em>`:""}</span>
+      <div class="bar"><i style="width:${r.v/maxI*100}%;background:var(--acc)"></i></div><b>${money(r.v)}</b></div>`).join("")
+      + (top.length>5 ? `<div class="small muted" style="margin-top:6px">+${top.length-5} more below</div>` : "");
+  }
+  return h + `</div>`;
+}
+
 function projectView(pid){
   const p = projectById(pid), ex = pexpOf(pid), inc = pinOf(pid);
   const spent = sum(ex), got = sum(inc), bal = got - spent;
@@ -1368,13 +1474,14 @@ function projectView(pid){
     <div class="small ${over?"cr":"muted"}" style="margin:6px 0 4px">${over? money(spent-p.budget)+" over budget" : money(p.budget-spent)+" left of "+money(p.budget)+" budget"}</div>`; }
   h += `<div class="grid2" style="margin-top:12px">
       <button class="btn get" data-act="addPin" data-id="${pid}">↓ Received</button>
-      <button class="btn coral" data-act="addPexp" data-id="${pid}">↑ Add expense</button></div>
+      <button class="btn coral" data-act="addPexp" data-id="${pid}">↑ Expense</button></div>
     <div class="row" style="justify-content:center;gap:18px;margin-top:12px">
       <button class="link" data-act="editProject" data-id="${pid}">Edit</button>
       <button class="link" data-act="toggleDone" data-id="${pid}">${p.done?"Reopen project":"Mark completed"}</button></div></div>`;
   if(!ex.length && !inc.length){
-    return h + `<div class="card empty"><p>Nothing in this project yet.<br>Tap <b>Received</b> when someone gives you money for this project,<br>or <b>Add expense</b> when you spend on it.</p></div>`;
+    return h + `<div class="card empty"><p>Nothing in this project yet.<br>Tap <b>Received</b> when someone gives you money for this project,<br>or <b>Expense</b> when you spend on it.</p></div>`;
   }
+  h += projectOverview(pid) + `<div class="sec-h">All entries</div>`;
   const items = ex.map(e=>({...e, kind:"out"})).concat(inc.map(e=>({...e, kind:"in"})))
     .sort((a,b)=> b.date.localeCompare(a.date) || (b.created||0)-(a.created||0));
   let cur=null, buf=[];
@@ -1387,7 +1494,7 @@ function projectView(pid){
         <div class="amt cg">+${money(e.amount)}</div></button>`);
     } else {
       buf.push(`<button class="item ${e.id===V.flash?"flash":""}" data-act="editPexp" data-id="${e.id}"><div class="arrow gave">↑</div>
-        <div class="mid"><div class="t">${esc(e.what||"Expense")}</div><div class="s">${esc(payById(e.pay).name)}</div></div>
+        <div class="mid"><div class="t">${esc(e.what||"Expense")}</div><div class="s">${normWho(e.by)===YOU?"You spent":"Spent by "+esc(normWho(e.by))} · ${esc(payById(e.pay).name)}</div></div>
         <div class="amt">${money(e.amount)}</div></button>`);
     }
   }
@@ -1460,6 +1567,10 @@ function openPexp(pid, id){
     <div class="field"><div class="amount-wrap"><span>₹</span>
       <input id="xAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${e? e.amount/100 : ""}" aria-label="Amount"></div></div>
     <div class="field"><label>What for</label><input class="inp" id="xWhat" maxlength="80" placeholder="e.g. ESP32 boards, sensors, PCB" value="${e?esc(e.what||""):""}"></div>
+    <div class="field"><label>Spent by</label>
+      <input class="inp" id="xBy" maxlength="40" list="xByNames" autocomplete="off" placeholder="You" value="${e?esc(normWho(e.by)):"You"}">
+      <datalist id="xByNames">${[...new Set([YOU].concat(D.pin.filter(x=>x.project===pid).map(x=>normWho(x.name)), D.pexp.filter(x=>x.project===pid).map(x=>normWho(x.by)), D.people.map(x=>x.name)))].map(n=>`<option value="${esc(n)}">`).join("")}</datalist>
+      <div class="small muted" style="margin-top:4px">Leave as “You” if you paid. Write a name if someone else paid.</div></div>
     <div class="field"><label>Paid with</label><div class="pills" id="xPays">
       ${D.payments.map(x=>`<button class="pill ${x.id===pay?"on":""}" data-pay="${x.id}">${esc(x.name)}</button>`).join("")}</div></div>
     <div class="field"><label>Date</label><div class="datebar">
@@ -1468,14 +1579,16 @@ function openPexp(pid, id){
     <div class="actions"><div class="err" id="xErr"></div>
     <div class="${e?"grid2":""}">${e?`<button class="btn danger" id="xDel">Delete</button>`:""}<button class="btn primary block" id="xSave">Save</button></div></div>`);
   const amt = $("#xAmt",ov); setTimeout(()=>{ if(!e) amt.focus(); },60);
+  $("#xBy",ov).addEventListener("focus",(ev)=>{ if(ev.target.value===YOU) ev.target.select(); });
   $("#xPays",ov).onclick = (ev)=>{ const b=ev.target.closest("[data-pay]"); if(!b) return; pay=b.dataset.pay; ov.querySelectorAll("[data-pay]").forEach(x=>x.classList.toggle("on",x===b)); };
   ov.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{ const d=new Date(); d.setDate(d.getDate()-Number(b.dataset.q)); $("#xDate",ov).value=ymd(d); });
   const doSave = ()=>{
     const a = parseAmount(amt.value), d = $("#xDate",ov).value, what = $("#xWhat",ov).value.trim();
     if(!(a>0)){ $("#xErr",ov).textContent="Please enter an amount, for example 1200."; amt.focus(); return; }
     if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ $("#xErr",ov).textContent="Please pick a date."; return; }
-    if(e) Object.assign(e,{amount:a, what, pay, date:d});
-    else { const nid="x"+uid(); D.pexp.push({id:nid, project:pid, amount:a, what, pay, date:d, created:Date.now()}); V.flash=nid; }
+    const by = normWho($("#xBy",ov).value);
+    if(e) Object.assign(e,{amount:a, what, by, pay, date:d});
+    else { const nid="x"+uid(); D.pexp.push({id:nid, project:pid, amount:a, what, by, pay, date:d, created:Date.now()}); V.flash=nid; }
     save(); closeSheet(); render(); toast((e?"Saved ":"Added ")+money(a)+" to "+p.name);
   };
   $("#xSave",ov).onclick = doSave;
@@ -1492,10 +1605,10 @@ async function exportCreditsCSV(){
 }
 async function exportProjectsCSV(){
   const q = (s)=>`"${String(s??"").replace(/"/g,'""')}"`;
-  const rows = [["Project","Date","Type","Name / What for","Purpose / Paid with","Amount (INR)"].join(",")];
+  const rows = [["Project","Date","Type","Name / What for","Purpose / Paid with","Spent by","Amount (INR)"].join(",")];
   const all = D.pin.map(e=>({...e,k:"in"})).concat(D.pexp.map(e=>({...e,k:"out"}))).sort((a,b)=>a.date.localeCompare(b.date)||(a.created||0)-(b.created||0));
   all.forEach(e=>rows.push([q((projectById(e.project)||{}).name||"?"), e.date, e.k==="in"?"Money received":"Expense",
-    q(e.k==="in"?e.name:e.what), q(e.k==="in"?e.purpose:payById(e.pay).name), (e.amount/100).toFixed(2)].join(",")));
+    q(e.k==="in"?e.name:e.what), q(e.k==="in"?e.purpose:payById(e.pay).name), q(e.k==="in"?"":normWho(e.by)), (e.amount/100).toFixed(2)].join(",")));
   rows.push(""); rows.push(["Project","Received (INR)","Spent (INR)","Balance (INR)","Budget (INR)","Status"].join(","));
   D.projects.forEach(p=>{ const got=sum(pinOf(p.id)), sp=sum(pexpOf(p.id));
     rows.push([q(p.name),(got/100).toFixed(2),(sp/100).toFixed(2),((got-sp)/100).toFixed(2), p.budget?(p.budget/100).toFixed(2):"", p.done?"Completed":"Active"].join(",")); });

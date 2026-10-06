@@ -65,6 +65,7 @@
 - Add expenses inside the project: what it was for, how much, how you paid.
 - Record **money received** for the project: who gave it (name) and the purpose.
 - See **Received**, **Spent** and **Balance** for each project.
+- **Money overview** chart: how much money is left, **who gave** and **who spent** how much, and **what it was spent on**.
 - Project money **stays inside the project**. It is not mixed with your daily spending.
 - Mark a project as completed when it is done.
 
