@@ -51,8 +51,9 @@
 - A yearly view with all 12 months, a chart, and your highest month.
 
 ### 🎯 Budgets
-- Set a monthly budget for each category.
-- See how much is left. It turns red when you go over.
+- Set a monthly budget for any category you want, for example ₹8,000 for Food.
+- Each budget counts **only the spending in its own category**. Other categories don't affect it.
+- See how much is left for each budget on Home. It turns red when you go over.
 
 ### 💰 Credits
 - Record money that comes into your account.
@@ -62,7 +63,9 @@
 ### 🛠️ Projects
 - Create a project, for example *"Smart plant monitor"*, with an optional budget.
 - Add expenses inside the project: what it was for, how much, how you paid.
-- Project expenses **stay inside the project**. They are not mixed with your daily spending.
+- Record **money received** for the project: who gave it (name) and the purpose.
+- See **Received**, **Spent** and **Balance** for each project.
+- Project money **stays inside the project**. It is not mixed with your daily spending.
 - Mark a project as completed when it is done.
 
 ### 🤝 Lend & Borrow

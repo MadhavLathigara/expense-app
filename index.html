@@ -46,7 +46,11 @@
 }
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{margin:0;background:var(--bg);color:var(--text)}
-html{touch-action:manipulation;-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* no double-tap zoom */
+html{touch-action:pan-y;-webkit-text-size-adjust:100%;text-size-adjust:100%}   /* only up/down scrolling: no sideways move, no zoom */
+html,body{overflow-x:hidden;max-width:100%}
+main{overflow-x:hidden}
+.sheet,.ned{touch-action:pan-y}
+.tiles>*,.stats>*,.grid2>*,.cols>*,.sumcards>*{min-width:0}
 body{font:15px/1.45 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Helvetica Neue",Arial,sans-serif;
   min-height:100vh;padding-bottom:calc(var(--nav-h) + var(--sab) + 16px);overscroll-behavior-y:none}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -199,8 +203,10 @@ nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:re
 .pills{display:flex;flex-wrap:wrap;gap:8px}
 .pill{border:1.5px solid var(--line);border-radius:99px;padding:8px 14px;font-weight:600;font-size:14px;background:var(--card)}
 .pill.on{border-color:var(--pri);background:var(--pri);color:var(--on-pri)}
-.datebar{display:flex;gap:8px;align-items:center}
-.datebar .inp{flex:1}
+.datebar{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.datebar .inp{flex:1 1 150px;min-width:0}
+.sheet{overflow-x:hidden}
+.sheet .field,.sheet .pills,.sheet .chips{min-width:0;max-width:100%}
 .actions{position:sticky;bottom:calc(-18px - var(--sab));background:var(--card);margin:0 -18px;padding:10px 18px calc(18px + var(--sab));border-top:1px solid var(--line)}
 @media (min-width:700px){ .actions{bottom:-20px;padding-bottom:20px} }
 .err{color:var(--red);font-size:13px;font-weight:600;min-height:18px;margin:-4px 0 8px}
@@ -230,6 +236,15 @@ nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:re
 .seg button.on.gave{background:var(--red);border-color:var(--red);color:#fff}
 .seg button.on.got{background:var(--green);border-color:var(--green);color:#fff}
 .hint{font-size:12.5px;color:var(--muted);margin:-4px 0 14px}
+/* per-category budgets on Home */
+.bud-list{margin:2px 0 12px}
+.bud-row{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:8px 0 4px}
+.bud-row .bn{font-weight:600;font-size:13.5px;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bud-row .small{white-space:nowrap;flex:none}
+/* project received / spent / balance */
+.pstats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:12px 0 6px}
+.pstats .label{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:.4px}
+.pstats .v{font-size:clamp(15px,4.6vw,20px);font-weight:800;white-space:nowrap}
 /* home shortcut tiles */
 .tiles{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
 .tile{background:var(--card);border:1px solid var(--line);border-radius:14px;padding:12px 10px;text-align:left;box-shadow:var(--shadow);min-width:0}
@@ -239,9 +254,9 @@ nav.tabs .in{max-width:620px;margin:0 auto;display:grid;grid-template-columns:re
 .tile .tv.cg{color:var(--green)}
 .tile:active{transform:scale(.95)}
 /* notes */
-.notes-grid{display:grid;gap:10px}
-@media (min-width:700px){ .notes-grid{grid-template-columns:1fr 1fr} }
-.note-card{display:block;width:100%;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;box-shadow:var(--shadow)}
+.notes-grid{display:grid;gap:10px;grid-template-columns:minmax(0,1fr)}
+@media (min-width:700px){ .notes-grid{grid-template-columns:minmax(0,1fr) minmax(0,1fr)} }
+.note-card{display:block;width:100%;min-width:0;max-width:100%;overflow:hidden;text-align:left;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:13px 14px;box-shadow:var(--shadow)}
 .note-card .nt{font-weight:700;font-size:15.5px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .note-card .np{font-size:13.5px;color:var(--muted);margin-top:3px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .note-card .nd{color:var(--text);font-weight:600}
@@ -382,6 +397,7 @@ function freshData(){
     credits: [],     // money coming in
     projects: [],    // projects
     pexp: [],        // project expenses (kept separate from daily expenses)
+    pin: [],         // money received for a project: {id, project, amount, name, purpose, date}
     people: [],      // friends & family
     loans: [],       // money given (gave) or received (got) with each person
     settings: { lastBackup:null, lastPay:"p1", hideInstall:false, theme:DEFAULT_THEME, anim:true }
@@ -403,6 +419,7 @@ function normalise(d){
   d.credits = Array.isArray(d.credits) ? d.credits : [];
   d.projects = Array.isArray(d.projects) ? d.projects : [];
   d.pexp = Array.isArray(d.pexp) ? d.pexp : [];
+  d.pin = Array.isArray(d.pin) ? d.pin : [];
   d.notes = Array.isArray(d.notes) ? d.notes.filter(n=>n && typeof n.text==="string") : [];
   d.settings = Object.assign({lastBackup:null,lastPay:"p1",hideInstall:false,theme:DEFAULT_THEME,anim:true}, d.settings||{});
   if(!THEMES[d.settings.theme]) d.settings.theme = DEFAULT_THEME;
@@ -449,6 +466,12 @@ function dayLabel(s){
 const catById = (id) => D.categories.find(c=>c.id===id) || {id, name:"(deleted category)", icon:"❔", color:"#999", budget:0};
 const payById = (id) => D.payments.find(p=>p.id===id) || {id, name:"—"};
 const totalBudget = () => D.categories.reduce((a,c)=>a+(c.budget||0),0);
+// Budgets are per category: each budget is compared ONLY with spending in its own category.
+function budgetInfo(list){
+  const rows = D.categories.filter(c=>c.budget>0).map(c=>({c, b:c.budget, spent: list.reduce((a,e)=> e.cat===c.id ? a+e.amount : a, 0)}));
+  const B = rows.reduce((a,r)=>a+r.b,0), S = rows.reduce((a,r)=>a+r.spent,0);
+  return {rows, B, S, left: B-S, over: rows.filter(r=>r.spent>r.b).length};
+}
 function sum(list){ return list.reduce((a,e)=>a+e.amount,0); }
 function inMonth(y,m){ const p = y+"-"+pad(m+1); return D.expenses.filter(e=>e.date.startsWith(p)); }
 function inYear(y){ const p = String(y)+"-"; return D.expenses.filter(e=>e.date.startsWith(p)); }
@@ -626,7 +649,7 @@ function homeView(){
   const todayT = sum(D.expenses.filter(e=>e.date===t));
   const monthT = sum(inMonth(now.getFullYear(), now.getMonth()));
   const yearT = sum(inYear(now.getFullYear()));
-  const bud = totalBudget();
+  const bi = budgetInfo(inMonth(now.getFullYear(), now.getMonth()));
   let h = "";
   // install hint
   const standalone = matchMedia("(display-mode: standalone)").matches || navigator.standalone;
@@ -645,10 +668,14 @@ function homeView(){
   h += `<div class="hero">
     <div class="label">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
     <div class="big">${cnt(monthT,"h-month")}</div>`;
-  if(bud>0){
-    const pct = Math.min(100, Math.round(monthT/bud*100)), over = monthT>bud;
-    h += `<div class="bar ${over?"over":""}" style="margin-bottom:6px"><i style="width:${pct}%"></i></div>
-      <div class="small ${over?"neg":"muted"}" style="margin-bottom:12px">${over? money(monthT-bud)+" over budget" : money(bud-monthT)+" left of "+money(bud)+" budget"}</div>`;
+  if(bi.rows.length){
+    const rows = bi.rows.slice().sort((a,b2)=> b2.spent/b2.b - a.spent/a.b);
+    h += `<div class="bud-list">` + rows.slice(0,4).map(({c,b,spent})=>{
+      const over = spent > b, pct = Math.min(100, spent/b*100);
+      return `<div class="bud-row"><span class="bn">${esc(c.icon)} ${esc(c.name)}</span>
+        <span class="small ${over?"neg":"muted"}">${over? money(spent-b)+" over" : money(b-spent)+" left of "+money(b)}</span></div>
+        <div class="bar ${over?"over":""}"><i style="width:${pct}%;${over?"":"background:"+c.color}"></i></div>`;
+    }).join("") + (rows.length>4 ? `<div class="small muted" style="margin-top:6px">+${rows.length-4} more budgets in <button class="link" data-tab="month">Month</button></div>` : "") + `</div>`;
   }
   h += `<div class="minis">
       <div class="mini coral"><div class="label">Today</div><div class="val">${cnt(todayT,"h-today")}</div></div>
@@ -719,13 +746,13 @@ function breakdownPays(list){
 }
 
 function monthView(){
-  const {y,m} = V, list = inMonth(y,m), total = sum(list), dc = daysCounted(y,m), bud = totalBudget();
+  const {y,m} = V, list = inMonth(y,m), total = sum(list), dc = daysCounted(y,m), bi = budgetInfo(list), bud = bi.B;
   let h = `<div class="switch"><button class="iconbtn" data-act="mPrev" aria-label="Previous month">‹</button>
     <div class="lbl">${MONTHS[m]} ${y}</div><button class="iconbtn" data-act="mNext" aria-label="Next month">›</button></div>`;
   h += `<div class="stats">
     <div class="stat c1"><div class="label">Total</div><div class="val">${cnt(total,"m-total","rup")}</div></div>
     <div class="stat c2"><div class="label">Avg / day</div><div class="val">${cnt(dc?total/dc:0,"m-avg","rup")}</div></div>
-    <div class="stat c3"><div class="label">Budget left</div><div class="val ${bud&&total>bud?"neg":""}">${bud?cnt(bud-total,"m-left","rup"):"—"}</div></div></div>`;
+    <div class="stat c3"><div class="label">Budget left</div><div class="val ${bud&&bi.left<0?"neg":""}">${bud?cnt(bi.left,"m-left","rup"):"—"}</div></div></div>`;
   h += `<div class="card"><h2>Spending by day</h2>${dailyChart(y,m)}</div>`;
   h += `<div class="cols"><div class="card"><h2>By category</h2>${breakdownCats(list,1)}</div>
         <div class="card"><h2>By payment mode</h2>${breakdownPays(list)}</div></div>`;
@@ -754,6 +781,7 @@ function yearChart(y){
 
 function yearView(){
   const y = V.year, list = inYear(y), total = sum(list), now = new Date(), bud = totalBudget();
+  const budSpentM = (i)=> budgetInfo(inMonth(y,i)).S;
   const mc = y<now.getFullYear()?12 : y===now.getFullYear()? now.getMonth()+1 : 0;
   const vals = MONTHS.map((_,i)=>sum(inMonth(y,i)));
   const best = Math.max(...vals);
@@ -767,11 +795,12 @@ function yearView(){
   h += `<div class="cols"><div class="card"><h2>Month by month</h2><table class="tbl"><tr><th>Month</th><th>Spent</th>${bud?"<th>Saved / Over</th>":""}</tr>`;
   vals.forEach((v,i)=>{
     const started = daysCounted(y,i) > 0;
-    const diff = started ? `<td class="${bud-v<0?"neg":"pos"}">${money(bud-v)}</td>` : `<td class="muted">—</td>`;
+    const left = bud - budSpentM(i);
+    const diff = started ? `<td class="${left<0?"neg":"pos"}">${money(left)}</td>` : `<td class="muted">—</td>`;
     h += `<tr class="click" data-act="goMonth" data-m="${i}"><td>${MONTHS[i]}</td><td>${money(v)}</td>${bud?diff:""}</tr>`;
   });
-  h += `<tr class="total"><td>Total</td><td>${money(total)}</td>${bud?`<td class="${bud*mc-total<0?"neg":"pos"}">${money(bud*mc-total)}</td>`:""}</tr></table>
-    ${bud?`<div class="small muted" style="margin-top:8px">Saved / Over = monthly budget minus what you spent.</div>`:""}</div>`;
+  h += `<tr class="total"><td>Total</td><td>${money(total)}</td>${bud?(()=>{ let lt=0; for(let i=0;i<12;i++) if(daysCounted(y,i)>0) lt += bud - budSpentM(i); return `<td class="${lt<0?"neg":"pos"}">${money(lt)}</td>`; })():""}</tr></table>
+    ${bud?`<div class="small muted" style="margin-top:8px">Saved / Over = your category budgets minus what you spent in those same categories. Categories without a budget are not counted.</div>`:""}</div>`;
   h += `<div class="card"><h2>By category (whole year)</h2>${breakdownCats(list,0)}</div></div>`;
   return h;
 }
@@ -1289,9 +1318,11 @@ function openCredit(id){
    Projects — each project keeps its own expenses, separate from daily spending
    Project: {id, name, budget, done, created}
    Project expense (pexp): {id, project, amount, what, pay, date, created}
+   Money received (pin): {id, project, amount, name, purpose, date, created}
    ========================================================= */
 const projectById = (id) => D.projects.find(p=>p.id===id);
 const pexpOf = (pid) => D.pexp.filter(e=>e.project===pid);
+const pinOf = (pid) => D.pin.filter(e=>e.project===pid);
 function projectsView(){
   if(V.project && projectById(V.project)) return projectView(V.project);
   const all = sum(D.pexp);
@@ -1302,14 +1333,15 @@ function projectsView(){
   if(!D.projects.length){
     return h + `<div class="card empty"><div class="e">🛠️</div><p><b>No projects yet</b><br>Create a project and add its expenses there.<br><span class="small">Project expenses stay inside the project and are not mixed with your daily expenses.</span></p></div>`;
   }
-  const rows = D.projects.map(p=>{ const ex = pexpOf(p.id); return {p, total:sum(ex), n:ex.length, last: ex.reduce((a,e)=>e.date>a?e.date:a, "")}; });
-  const card = ({p,total,n,last})=>{
+  const rows = D.projects.map(p=>{ const ex = pexpOf(p.id), inc = pinOf(p.id); return {p, total:sum(ex), got:sum(inc), n:ex.length, last: ex.concat(inc).reduce((a,e)=>e.date>a?e.date:a, "")}; });
+  const card = ({p,total,got,n,last})=>{
     let bar = "";
     if(p.budget){ const over = total>p.budget; bar = `<div class="bar ${over?"over":""}" style="margin-top:10px"><i style="width:${Math.min(100,total/p.budget*100)}%"></i></div>
       <div class="small ${over?"cr":"muted"}" style="margin-top:4px">${over? money(total-p.budget)+" over budget" : money(p.budget-total)+" left of "+money(p.budget)}</div>`; }
     return `<button class="note-card ${p.id===V.flash?"flash":""}" data-act="project" data-id="${p.id}" style="${p.done?"opacity:.75":""}">
-      <div class="row between"><div class="nt">${p.done?"✅ ":"🛠️ "}${esc(p.name)}</div><b>${money(total)}</b></div>
-      <div class="np">${n} expense${n===1?"":"s"}${last?" · last "+esc(dayLabel(last)):""}</div>${bar}</button>`;
+      <div class="row between" style="min-width:0"><div class="nt" style="min-width:0;flex:1">${p.done?"✅ ":"🛠️ "}${esc(p.name)}</div><b style="flex:none">${money(total)}</b></div>
+      <div class="np">${n} expense${n===1?"":"s"}${last?" · last "+esc(dayLabel(last)):""}</div>
+      ${got?`<div class="small" style="margin-top:4px"><span class="cg">Received ${money(got)}</span> · <span class="${got-total<0?"cr":"muted"}">Balance ${money(got-total)}</span></div>`:""}${bar}</button>`;
   };
   const act = rows.filter(r=>!r.p.done).sort((a,b)=> (b.last||"").localeCompare(a.last||"") || (b.p.created||0)-(a.p.created||0));
   const done = rows.filter(r=>r.p.done).sort((a,b)=> (b.last||"").localeCompare(a.last||""));
@@ -1318,35 +1350,87 @@ function projectsView(){
   return h;
 }
 function projectView(pid){
-  const p = projectById(pid), ex = pexpOf(pid), total = sum(ex);
+  const p = projectById(pid), ex = pexpOf(pid), inc = pinOf(pid);
+  const spent = sum(ex), got = sum(inc), bal = got - spent;
   let h = "";
-  h += `<div class="card pcard"><div style="font-size:30px">${p.done?"✅":"🛠️"}</div><div style="font-weight:800;font-size:18px">${esc(p.name)}</div>
-    <div class="big2" style="margin-top:6px;color:var(--big)">${cnt(total,"pr-"+pid)}</div>
-    <div class="muted small" style="margin-bottom:10px">spent on this project · ${ex.length} expense${ex.length===1?"":"s"}</div>`;
-  if(p.budget){ const over = total>p.budget; h += `<div class="bar ${over?"over":""}"><i style="width:${Math.min(100,total/p.budget*100)}%"></i></div>
-    <div class="small ${over?"cr":"muted"}" style="margin:6px 0 4px">${over? money(total-p.budget)+" over budget" : money(p.budget-total)+" left of "+money(p.budget)+" budget"}</div>`; }
-  h += `<div style="margin-top:12px"><button class="btn coral block" data-act="addPexp" data-id="${pid}">+ Add project expense</button></div>
+  h += `<div class="card pcard"><div style="font-size:30px">${p.done?"✅":"🛠️"}</div><div style="font-weight:800;font-size:18px">${esc(p.name)}</div>`;
+  if(inc.length){
+    h += `<div class="pstats">
+        <div><div class="label cg">Received</div><div class="v cg">${cnt(got,"pr-in-"+pid)}</div></div>
+        <div><div class="label cr">Spent</div><div class="v">${cnt(spent,"pr-"+pid)}</div></div>
+        <div><div class="label" style="color:var(--pri)">Balance</div><div class="v ${bal<0?"cr":""}">${cnt(bal,"pr-bal-"+pid)}</div></div></div>
+      <div class="muted small" style="margin:2px 0 10px">${bal<0? "You spent "+money(-bal)+" more than you received" : money(bal)+" of received money is left"}</div>`;
+  } else {
+    h += `<div class="big2" style="margin-top:6px;color:var(--big)">${cnt(spent,"pr-"+pid)}</div>
+      <div class="muted small" style="margin-bottom:10px">spent on this project · ${ex.length} expense${ex.length===1?"":"s"}</div>`;
+  }
+  if(p.budget){ const over = spent>p.budget; h += `<div class="bar ${over?"over":""}"><i style="width:${Math.min(100,spent/p.budget*100)}%"></i></div>
+    <div class="small ${over?"cr":"muted"}" style="margin:6px 0 4px">${over? money(spent-p.budget)+" over budget" : money(p.budget-spent)+" left of "+money(p.budget)+" budget"}</div>`; }
+  h += `<div class="grid2" style="margin-top:12px">
+      <button class="btn get" data-act="addPin" data-id="${pid}">↓ Received</button>
+      <button class="btn coral" data-act="addPexp" data-id="${pid}">↑ Add expense</button></div>
     <div class="row" style="justify-content:center;gap:18px;margin-top:12px">
       <button class="link" data-act="editProject" data-id="${pid}">Edit</button>
       <button class="link" data-act="toggleDone" data-id="${pid}">${p.done?"Reopen project":"Mark completed"}</button></div></div>`;
-  if(!ex.length){
-    return h + `<div class="card empty"><p>No expenses in this project yet.<br>Tap <b>Add project expense</b> to add the first one.</p></div>`;
+  if(!ex.length && !inc.length){
+    return h + `<div class="card empty"><p>Nothing in this project yet.<br>Tap <b>Received</b> when someone gives you money for this project,<br>or <b>Add expense</b> when you spend on it.</p></div>`;
   }
-  const items = ex.slice().sort((a,b)=> b.date.localeCompare(a.date) || (b.created||0)-(a.created||0));
+  const items = ex.map(e=>({...e, kind:"out"})).concat(inc.map(e=>({...e, kind:"in"})))
+    .sort((a,b)=> b.date.localeCompare(a.date) || (b.created||0)-(a.created||0));
   let cur=null, buf=[];
-  const flush=()=>{ if(cur!==null){ const dt = sum(items.filter(e=>e.date===cur)); h += `<div class="day-h"><span>${esc(dayLabel(cur))}</span><span>${money(dt)}</span></div><div class="list">${buf.join("")}</div>`; } };
+  const flush=()=>{ if(cur!==null){ h += `<div class="day-h"><span>${esc(dayLabel(cur))}</span></div><div class="list">${buf.join("")}</div>`; } };
   for(const e of items){
     if(e.date!==cur){ flush(); cur=e.date; buf=[]; }
-    buf.push(`<button class="item ${e.id===V.flash?"flash":""}" data-act="editPexp" data-id="${e.id}"><div class="ico" style="background:var(--acc-l)">🧾</div>
-      <div class="mid"><div class="t">${esc(e.what||"Expense")}</div><div class="s">${esc(payById(e.pay).name)}</div></div>
-      <div class="amt">${money(e.amount)}</div></button>`);
+    if(e.kind==="in"){
+      buf.push(`<button class="item ${e.id===V.flash?"flash":""}" data-act="editPin" data-id="${e.id}"><div class="arrow got">↓</div>
+        <div class="mid"><div class="t">${esc(e.name||"Someone")} gave</div><div class="s">${esc(e.purpose||"No purpose written")}</div></div>
+        <div class="amt cg">+${money(e.amount)}</div></button>`);
+    } else {
+      buf.push(`<button class="item ${e.id===V.flash?"flash":""}" data-act="editPexp" data-id="${e.id}"><div class="arrow gave">↑</div>
+        <div class="mid"><div class="t">${esc(e.what||"Expense")}</div><div class="s">${esc(payById(e.pay).name)}</div></div>
+        <div class="amt">${money(e.amount)}</div></button>`);
+    }
   }
   flush();
   return h;
 }
+function openPin(pid, id){
+  const p = projectById(pid); if(!p) return;
+  const e = id ? D.pin.find(x=>x.id===id) : null;
+  const names = [...new Set(D.pin.map(x=>x.name).concat(D.people.map(x=>x.name)).filter(Boolean))].sort((a,b)=>a.localeCompare(b));
+  const ov = openSheet(`<h3>${e?"Edit money received":"↓ Money received"}</h3>
+    <div class="hint">For project <b>${esc(p.name)}</b></div>
+    <div class="field"><div class="amount-wrap"><span>₹</span>
+      <input id="rAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${e? e.amount/100 : ""}" aria-label="Amount"></div></div>
+    <div class="field"><label>Name (who gave the money)</label>
+      <input class="inp" id="rName" maxlength="40" list="rNames" autocomplete="off" placeholder="e.g. Rahul" value="${e?esc(e.name||""):""}">
+      <datalist id="rNames">${names.map(n=>`<option value="${esc(n)}">`).join("")}</datalist></div>
+    <div class="field"><label>Purpose (what it is for)</label><input class="inp" id="rPurpose" maxlength="100" placeholder="e.g. Buy sensors and boards" value="${e?esc(e.purpose||""):""}"></div>
+    <div class="field"><label>Date</label><div class="datebar">
+      <input type="date" class="inp" id="rDate" value="${e?e.date:todayStr()}">
+      <button class="pill" data-q="0">Today</button><button class="pill" data-q="1">Yesterday</button></div></div>
+    <div class="actions"><div class="err" id="rErr"></div>
+    <div class="${e?"grid2":""}">${e?`<button class="btn danger" id="rDel">Delete</button>`:""}<button class="btn primary block" id="rSave">Save</button></div></div>`);
+  const amt = $("#rAmt",ov); setTimeout(()=>{ if(!e) amt.focus(); },60);
+  ov.querySelectorAll("[data-q]").forEach(b=>b.onclick=()=>{ const d=new Date(); d.setDate(d.getDate()-Number(b.dataset.q)); $("#rDate",ov).value=ymd(d); });
+  const doSave = ()=>{
+    const a = parseAmount(amt.value), d = $("#rDate",ov).value, name = $("#rName",ov).value.trim(), purpose = $("#rPurpose",ov).value.trim();
+    if(!(a>0)){ $("#rErr",ov).textContent="Please enter an amount, for example 10000."; amt.focus(); return; }
+    if(!name){ $("#rErr",ov).textContent="Please write the name of who gave the money."; $("#rName",ov).focus(); return; }
+    if(!/^\d{4}-\d{2}-\d{2}$/.test(d)){ $("#rErr",ov).textContent="Please pick a date."; return; }
+    if(e) Object.assign(e,{amount:a, name, purpose, date:d});
+    else { const nid="r"+uid(); D.pin.push({id:nid, project:pid, amount:a, name, purpose, date:d, created:Date.now()}); V.flash=nid; }
+    save(); closeSheet(); render(); toast((e?"Saved ":"Received ")+money(a)+" from "+name);
+  };
+  $("#rSave",ov).onclick = doSave;
+  ov.addEventListener("keydown",(ev)=>{ if(ev.key==="Enter" && ev.target.tagName==="INPUT" && ev.target.type!=="date"){ ev.preventDefault(); doSave(); } });
+  if(e) $("#rDel",ov).onclick = async ()=>{
+    if(await ask(`Delete ${money(e.amount)} received from ${e.name||"this person"}?`,"Delete",true)){ D.pin=D.pin.filter(x=>x!==e); save(); animOut(e.id, render); toast("Deleted"); }
+  };
+}
 function openProject(id){
   const p = id ? projectById(id) : null;
-  const n = p ? pexpOf(p.id).length : 0;
+  const n = p ? pexpOf(p.id).length + pinOf(p.id).length : 0;
   const ov = openSheet(`<h3>${p?"Edit project":"New project"}</h3>
     <div class="field"><label>Project name</label><input class="inp" id="jName" maxlength="50" placeholder="e.g. Smart plant monitor" value="${p?esc(p.name):""}"></div>
     <div class="field"><label>Budget (₹, optional)</label><input class="inp" id="jBud" inputmode="decimal" placeholder="Leave empty for no budget" value="${p&&p.budget?p.budget/100:""}"></div>
@@ -1364,8 +1448,8 @@ function openProject(id){
   $("#jSave",ov).onclick = doSave;
   ov.addEventListener("keydown",(ev)=>{ if(ev.key==="Enter" && ev.target.tagName==="INPUT"){ ev.preventDefault(); doSave(); } });
   if(p) $("#jDel",ov).onclick = async ()=>{
-    if(await ask(n? `Delete project “${p.name}” and its ${n} expenses?` : `Delete project “${p.name}”?`,"Delete",true)){
-      D.pexp = D.pexp.filter(e=>e.project!==p.id); D.projects = D.projects.filter(x=>x!==p); save(); goBack(); toast("Project deleted"); }
+    if(await ask(n? `Delete project “${p.name}” and all its ${n} entries?` : `Delete project “${p.name}”?`,"Delete",true)){
+      D.pexp = D.pexp.filter(e=>e.project!==p.id); D.pin = D.pin.filter(e=>e.project!==p.id); D.projects = D.projects.filter(x=>x!==p); save(); goBack(); toast("Project deleted"); }
   };
 }
 function openPexp(pid, id){
@@ -1408,10 +1492,13 @@ async function exportCreditsCSV(){
 }
 async function exportProjectsCSV(){
   const q = (s)=>`"${String(s??"").replace(/"/g,'""')}"`;
-  const rows = [["Project","Date","What for","Paid with","Amount (INR)"].join(",")];
-  D.pexp.slice().sort((a,b)=>a.date.localeCompare(b.date)).forEach(e=>rows.push([q((projectById(e.project)||{}).name||"?"), e.date, q(e.what), q(payById(e.pay).name), (e.amount/100).toFixed(2)].join(",")));
-  rows.push(""); rows.push(["Project","Total (INR)","Budget (INR)","Status"].join(","));
-  D.projects.forEach(p=>rows.push([q(p.name),(sum(pexpOf(p.id))/100).toFixed(2), p.budget?(p.budget/100).toFixed(2):"", p.done?"Completed":"Active"].join(",")));
+  const rows = [["Project","Date","Type","Name / What for","Purpose / Paid with","Amount (INR)"].join(",")];
+  const all = D.pin.map(e=>({...e,k:"in"})).concat(D.pexp.map(e=>({...e,k:"out"}))).sort((a,b)=>a.date.localeCompare(b.date)||(a.created||0)-(b.created||0));
+  all.forEach(e=>rows.push([q((projectById(e.project)||{}).name||"?"), e.date, e.k==="in"?"Money received":"Expense",
+    q(e.k==="in"?e.name:e.what), q(e.k==="in"?e.purpose:payById(e.pay).name), (e.amount/100).toFixed(2)].join(",")));
+  rows.push(""); rows.push(["Project","Received (INR)","Spent (INR)","Balance (INR)","Budget (INR)","Status"].join(","));
+  D.projects.forEach(p=>{ const got=sum(pinOf(p.id)), sp=sum(pexpOf(p.id));
+    rows.push([q(p.name),(got/100).toFixed(2),(sp/100).toFixed(2),((got-sp)/100).toFixed(2), p.budget?(p.budget/100).toFixed(2):"", p.done?"Completed":"Active"].join(",")); });
   await shareOrDownload(`projects-${todayStr()}.csv`, "﻿"+rows.join("\r\n"), "text/csv");
 }
 
@@ -1445,7 +1532,7 @@ function restoreFrom(file){
     try{
       const d = JSON.parse(r.result);
       if(!d || !Array.isArray(d.expenses) || !Array.isArray(d.categories)) throw new Error("bad");
-      const okAmounts = d.expenses.concat(Array.isArray(d.loans)?d.loans:[], Array.isArray(d.credits)?d.credits:[], Array.isArray(d.pexp)?d.pexp:[]).every(e=>Number.isInteger(e.amount) && /^\d{4}-\d{2}-\d{2}$/.test(e.date));
+      const okAmounts = d.expenses.concat(Array.isArray(d.loans)?d.loans:[], Array.isArray(d.credits)?d.credits:[], Array.isArray(d.pexp)?d.pexp:[], Array.isArray(d.pin)?d.pin:[]).every(e=>Number.isInteger(e.amount) && /^\d{4}-\d{2}-\d{2}$/.test(e.date));
       if(!okAmounts) throw new Error("bad");
       if(d.notes && (!Array.isArray(d.notes) || !d.notes.every(n=>n && typeof n.text==="string"))) throw new Error("bad");
       if(await ask(`Replace current data (${D.expenses.length} entries) with this backup (${d.expenses.length} entries)?`,"Restore",true)){
@@ -1506,6 +1593,8 @@ document.addEventListener("click", async (ev)=>{
   else if(act==="editProject") openProject(a.dataset.id);
   else if(act==="toggleDone"){ const pr=projectById(a.dataset.id); if(pr){ pr.done=!pr.done; save(); render(); toast(pr.done?"Marked completed ✓":"Project reopened"); if(pr.done) setTimeout(confetti,120); } }
   else if(act==="addPexp") openPexp(a.dataset.id, null);
+  else if(act==="addPin") openPin(a.dataset.id, null);
+  else if(act==="editPin"){ const r=D.pin.find(x=>x.id===a.dataset.id); if(r) openPin(r.project, r.id); }
   else if(act==="editPexp"){ const ex=D.pexp.find(x=>x.id===a.dataset.id); if(ex) openPexp(ex.project, ex.id); }
   else if(act==="csvCredits") exportCreditsCSV();
   else if(act==="csvProjects") exportProjectsCSV();
