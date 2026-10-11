@@ -81,7 +81,7 @@
 - Saves while you type. Pin, search, share and delete notes.
 
 ### 🎨 Look & feel
-- 4 colour themes: **Black & Gold**, **Royal Purple**, **Wine & Peach**, **Teal & Coral**.
+- 2 colour themes: **Black & Gold** (default) and **Purple & Black**.
 - Automatic **dark mode**.
 - Smooth animations: counting numbers, growing charts, confetti when you settle up. You can switch them off.
 
@@ -113,13 +113,12 @@
 </table>
 
 <details>
-<summary><b>More screenshots: other themes, settings, Windows</b></summary>
+<summary><b>More screenshots: Purple & Black theme, settings, Windows</b></summary>
 <br>
 <table>
   <tr>
-    <td align="center"><img src="screenshots/theme-purple.png" width="200"><br><sub>Royal Purple</sub></td>
-    <td align="center"><img src="screenshots/theme-wine.png" width="200"><br><sub>Wine & Peach</sub></td>
-    <td align="center"><img src="screenshots/theme-teal.png" width="200"><br><sub>Teal & Coral</sub></td>
+    <td align="center"><img src="screenshots/theme-purple.png" width="200"><br><sub>Purple & Black</sub></td>
+    <td align="center"><img src="screenshots/theme-purple-dark.png" width="200"><br><sub>Purple & Black (dark mode)</sub></td>
     <td align="center"><img src="screenshots/11-settings.png" width="200"><br><sub>Settings</sub></td>
   </tr>
 </table>

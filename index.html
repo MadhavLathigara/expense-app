@@ -15,10 +15,8 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 /* ---- colour themes: P = main colour, PD = main colour in dark mode, A = accent, T = third, H1/H2 = header ---- */
-[data-theme="teal"]  {--P:#1E7A73;--PD:#5FC4B8;--A:#E07A5F;--T:#D99A2B;--H1:#1E7A73;--H2:#134E4A;--onP:#fff;--onPD:#08201E;--onA:#fff}
-[data-theme="purple"]{--P:#5B3CC4;--PD:#A995F5;--A:#FF7A59;--T:#E3A21A;--H1:#6A45D8;--H2:#35207E;--onP:#fff;--onPD:#1A1240;--onA:#fff}
 [data-theme="gold"]  {--P:#1F1F24;--PD:#E2B64B;--A:#D9A21B;--T:#2F9E6E;--H1:#2E2E35;--H2:#111114;--onP:#fff;--onPD:#1A1406;--onA:#1A1406}
-[data-theme="wine"]  {--P:#9B2C5A;--PD:#F28DB2;--A:#F08A5D;--T:#C9971C;--H1:#A8325F;--H2:#5C1636;--onP:#fff;--onPD:#2A0816;--onA:#fff}
+[data-theme="purple"]{--P:#1E1A28;--PD:#B69CFF;--A:#8B5CF6;--T:#2F9E6E;--H1:#2B2338;--H2:#0F0C15;--onP:#fff;--onPD:#1A1033;--onA:#fff}
 :root{
   --bg:#F5F6F8; --card:#FFFFFF; --text:#1E2230; --muted:#6B7080; --line:#E7E8EE;
   --pri:var(--P); --on-pri:var(--onP); --acc:var(--A); --on-acc:var(--onA); --third:var(--T); --big:var(--H2);
@@ -421,10 +419,8 @@ const DEFAULT_PAYS = ["UPI","Cash","Debit Card","Credit Card","Net Banking","Oth
 const YOU = "You";
 const DEFAULT_THEME = "gold";
 const THEMES = {
-  teal:   {name:"Teal & Coral",   c:["#1E7A73","#E07A5F"], bar:"#134E4A"},
-  purple: {name:"Royal Purple",   c:["#5B3CC4","#FF7A59"], bar:"#35207E"},
   gold:   {name:"Black & Gold",   c:["#1F1F24","#D9A21B"], bar:"#111114"},
-  wine:   {name:"Wine & Peach",   c:["#9B2C5A","#F08A5D"], bar:"#5C1636"}
+  purple: {name:"Purple & Black", c:["#1E1A28","#8B5CF6"], bar:"#0F0C15"}
 };
 function applyTheme(){
   const t = THEMES[D.settings.theme] ? D.settings.theme : DEFAULT_THEME;

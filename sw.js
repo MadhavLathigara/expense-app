@@ -1,6 +1,6 @@
 // Offline support: keeps a copy of the app files on the device.
 // Your expense data is NOT here — it lives only in the app's local storage.
-const CACHE = "expense-app-v14";
+const CACHE = "expense-app-v15";
 const FILES = [
   "./",
   "./index.html",
