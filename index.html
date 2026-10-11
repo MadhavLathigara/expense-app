@@ -97,7 +97,6 @@ main{max-width:980px;margin:0 auto;padding:16px}
 /* progress */
 .bar{height:8px;border-radius:99px;background:var(--line);overflow:hidden}
 .bar > i{display:block;height:100%;border-radius:99px;background:var(--pri)}
-.bar.over > i{background:var(--red)}
 
 /* list */
 .day-h{display:flex;justify-content:space-between;align-items:baseline;padding:14px 4px 6px;font-size:13px;font-weight:700;color:var(--muted)}
@@ -370,6 +369,28 @@ main.fresh svg.chart text.v{animation:fadeIn .4s ease .5s both}
 .pill.on,.seg button.on{animation:pop .3s ease}
 .conf{position:fixed;width:9px;height:14px;border-radius:2px;z-index:70;pointer-events:none;left:50%;top:42%}
 html.theme-fade, html.theme-fade *{transition:background-color .45s ease,color .45s ease,border-color .45s ease,fill .45s ease!important}
+/* hero cards on every screen */
+.hero .hline{font-size:12.5px;font-weight:600;margin:-6px 0 10px}
+.hero .hsub{font-size:13px;font-weight:600;margin:-6px 0 10px}
+.hero .hbt{margin:6px 0 12px}
+.mini.green{background:var(--green-l)} .mini.green .label{color:var(--green)}
+.mini.red{background:var(--red-l)} .mini.red .label{color:var(--red)}
+.mini .val{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.spark{display:flex;align-items:flex-end;gap:4px;height:48px;margin:2px 0 4px}
+.spark i{flex:1;min-width:0;border-radius:4px 4px 2px 2px;background:var(--pri);transform-origin:center bottom}
+.spark i.cur{background:var(--acc)} .spark i.zero{opacity:.22}
+.spark-l{display:flex;gap:4px;font-size:9.5px;color:var(--muted);margin-bottom:12px;font-weight:600}
+.spark-l span{flex:1;text-align:center}
+main.fresh .spark i{animation:growY .6s cubic-bezier(.2,.75,.2,1) both}
+.sbar{display:flex;gap:3px;height:10px;border-radius:99px;overflow:hidden;margin:4px 0 12px}
+.card .sbar{margin:12px 0 0}
+.sbar i{display:block;height:100%;border-radius:99px}
+.sbar .g{background:var(--green)} .sbar .r{background:var(--red)}
+main.fresh .sbar{transform-origin:left center;animation:growX .8s cubic-bezier(.2,.75,.2,1) .15s both}
+@supports (color: color-mix(in srgb, red 50%, blue)){
+  .spark i{background:linear-gradient(180deg,color-mix(in srgb, var(--pri) 55%, var(--glow)),var(--pri))}
+  .spark i.cur{background:var(--acc)}
+}
 /* ================= colour effects (follow the theme; motion stops when Animations is off) ================= */
 header.top{position:relative;overflow:hidden;isolation:isolate}
 header.top::before{content:"";position:absolute;inset:-60% -25%;z-index:-1;pointer-events:none;
@@ -381,8 +402,8 @@ header.top::after{content:"";position:absolute;left:0;bottom:0;width:45%;height:
   animation:lineSweep 6s ease-in-out 1s infinite}
 @keyframes aurora{0%{transform:translate(-7%,-5%) rotate(0deg) scale(1)}100%{transform:translate(7%,6%) rotate(10deg) scale(1.12)}}
 @keyframes lineSweep{0%{transform:translateX(-110%)}55%,100%{transform:translateX(330%)}}
-.hero{position:relative;isolation:isolate}
-.hero::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.6px;pointer-events:none;
+.hero,.glow{position:relative;isolation:isolate}
+.hero::before,.glow::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.6px;pointer-events:none;
   background:linear-gradient(115deg,transparent 0%,var(--glow) 22%,transparent 42%,transparent 58%,var(--pri) 78%,transparent 100%);
   background-size:260% 260%;animation:borderFlow 8s linear infinite;
   -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
@@ -409,18 +430,63 @@ header.top::after{content:"";position:absolute;left:0;bottom:0;width:45%;height:
   header.top::before{background:radial-gradient(closest-side at 18% 35%, color-mix(in srgb, var(--GD) 42%, transparent), transparent),
                                 radial-gradient(closest-side at 82% 75%, color-mix(in srgb, var(--GD) 28%, transparent), transparent)}
   header.top::after{background:linear-gradient(90deg,transparent,color-mix(in srgb, var(--GD) 85%, #fff),transparent)}
-  .hero{box-shadow:var(--shadow),0 14px 34px -16px color-mix(in srgb, var(--glow) 60%, transparent)}
+  .hero,.glow{box-shadow:var(--shadow),0 14px 34px -16px color-mix(in srgb, var(--glow) 60%, transparent)}
   .bar > i{background:linear-gradient(90deg,var(--pri),color-mix(in srgb, var(--pri) 55%, var(--glow)))}
   .fab{box-shadow:0 8px 22px -4px color-mix(in srgb, var(--acc) 55%, transparent),0 3px 8px rgba(0,0,0,.18)}
   .tile{background:radial-gradient(150px 90px at 0% 0%, color-mix(in srgb, var(--glow) 14%, transparent), transparent 72%),var(--card)}
 }
-.bar.over > i{background:var(--red)}
 @supports ((-webkit-background-clip:text) or (background-clip:text)){
-  .hero .big{background:linear-gradient(100deg,var(--big) 0%,var(--big) 40%,var(--glow) 50%,var(--big) 60%,var(--big) 100%);
+  .hero .big,.glow .big2{background:linear-gradient(100deg,var(--big) 0%,var(--big) 40%,var(--glow) 50%,var(--big) 60%,var(--big) 100%);
     background-size:260% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;
     color:transparent;-webkit-text-fill-color:transparent;animation:sheen 7s ease-in-out 1.2s infinite}
 }
 @keyframes sheen{0%{background-position:100% 0}30%,100%{background-position:0% 0}}
+/* ---- more colour effects: month card, bars, charts, pop-ups ---- */
+.bar > i{--c:var(--pri);--c2:var(--glow)}
+.bar > i[style*="--c:"]{--c2:#fff}
+.bar.over > i{--c:var(--red);--c2:#fff}
+.bar > i{background:var(--c)}
+.bar.over{animation:overGlow 1.8s ease-in-out infinite}
+@keyframes overGlow{0%,100%{box-shadow:0 0 0 0 transparent}50%{box-shadow:0 0 10px 1px rgba(220,60,60,.45)}}
+.bar > i::before{content:"";position:absolute;top:0;bottom:0;right:0;width:10px;border-radius:99px;pointer-events:none;
+  background:radial-gradient(circle at 70% 50%,rgba(255,255,255,.95),rgba(255,255,255,0) 70%);animation:tipPulse 1.8s ease-in-out infinite}
+@keyframes tipPulse{0%,100%{opacity:.35}50%{opacity:1}}
+.hero .label.live::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:7px;vertical-align:1px;
+  background:var(--glow);animation:livePulse 2.2s ease-out infinite}
+@keyframes livePulse{0%{box-shadow:0 0 0 0 var(--glow)}70%,100%{box-shadow:0 0 0 7px transparent}}
+.be{display:inline-block}
+main.fresh .bud-row .be{animation:pop .5s ease both}
+main.fresh .bud-row:nth-of-type(2) .be{animation-delay:.12s} main.fresh .bud-row:nth-of-type(3) .be{animation-delay:.24s} main.fresh .bud-row:nth-of-type(4) .be{animation-delay:.36s}
+.mini{position:relative;overflow:hidden;isolation:isolate}
+.mini::before{content:"";position:absolute;width:110px;height:110px;border-radius:50%;top:-40px;left:-30px;z-index:-1;pointer-events:none;
+  background:radial-gradient(circle,rgba(255,255,255,.35),transparent 65%);animation:orb 9s ease-in-out infinite alternate}
+.mini.teal::before{animation-delay:-4.5s}
+@keyframes orb{0%{transform:translate(0,0)}50%{transform:translate(90px,30px)}100%{transform:translate(40px,55px)}}
+.hero{transition:transform .3s cubic-bezier(.2,.8,.2,1);transform:perspective(900px) rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg))}
+.hero.tilt{transition:transform .08s linear}
+.hero::after{content:"";position:absolute;inset:0;border-radius:inherit;pointer-events:none;opacity:0;transition:opacity .3s ease;
+  background:radial-gradient(220px 160px at var(--gx,50%) var(--gy,50%),rgba(255,255,255,.22),transparent 70%)}
+.hero.tilt::after{opacity:1}
+.stat{position:relative;overflow:hidden;--sc:var(--glow)}
+.stat.c1{--sc:var(--acc)} .stat.c2{--sc:var(--pri)} .stat.c3{--sc:var(--third)}
+.stat::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,var(--sc),var(--glow),var(--sc),transparent);background-size:200% 100%;animation:lineFlow 4s linear infinite}
+@keyframes lineFlow{0%{background-position:0% 0}100%{background-position:200% 0}}
+.grab{background:linear-gradient(90deg,var(--pri),var(--glow),var(--pri));background-size:200% 100%;animation:lineFlow 2.5s linear infinite;opacity:.85}
+.btn.primary,.btn.coral,.btn.inv{position:relative;overflow:hidden}
+.btn.primary::after,.btn.coral::after,.btn.inv::after{content:"";position:absolute;top:0;bottom:0;left:0;width:40%;pointer-events:none;
+  background:linear-gradient(100deg,transparent,rgba(255,255,255,.28),transparent);transform:translateX(-120%);animation:btnSheen 4.5s ease-in-out 1.5s infinite}
+@keyframes btnSheen{0%{transform:translateX(-120%)}35%,100%{transform:translateX(320%)}}
+.spk{position:fixed;width:8px;height:8px;border-radius:50%;z-index:70;pointer-events:none}
+@supports (color: color-mix(in srgb, red 50%, blue)){
+  .bar > i{background:linear-gradient(180deg,rgba(255,255,255,.28),rgba(255,255,255,0) 65%),
+                      linear-gradient(90deg,var(--c),color-mix(in srgb,var(--c) 60%,var(--c2)))}
+  .mini.coral::before{background:radial-gradient(circle,color-mix(in srgb,var(--glow) 30%,#fff 10%),transparent 65%)}
+  .mini.teal::before{background:radial-gradient(circle,color-mix(in srgb,var(--glow) 34%,transparent),transparent 65%)}
+  .hero::after{background:radial-gradient(220px 160px at var(--gx,50%) var(--gy,50%),color-mix(in srgb,var(--glow) 22%,transparent),transparent 70%)}
+  .donut{filter:drop-shadow(0 6px 14px color-mix(in srgb,var(--glow) 32%,transparent))}
+  .toast{box-shadow:0 6px 18px rgba(0,0,0,.2),0 0 0 1.5px color-mix(in srgb,var(--glow) 70%,transparent),0 0 18px color-mix(in srgb,var(--glow) 35%,transparent)}
+}
 /* on/off switch */
 .switch2{width:52px;height:32px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background-color .2s ease}
 .switch2::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
@@ -666,6 +732,40 @@ window.addEventListener("popstate", (e)=>{
 let lastKey = null, animDir = null;
 const prevVals = new Map();
 const motionOK = () => D.settings.anim !== false && !matchMedia("(prefers-reduced-motion: reduce)").matches;
+// ---- "hero" summary card: label, big shining number, line, bar, mini boxes ----
+function heroCard(o){
+  let h = `<div class="hero">${o.label?`<div class="label">${o.label}</div>`:""}
+    <div class="big"${o.bigColor?` style="--big:${o.bigColor}"`:""}>${o.big}</div>`;
+  if(o.sub) h += `<div class="hsub ${o.subCls||""}">${o.sub}</div>`;
+  if(o.line) h += `<div class="hline ${o.lineCls||""}">${o.line}</div>`;
+  if(o.spark) h += o.spark;
+  if(o.bar) h += `<div class="bar ${o.bar.over?"over":""}"><i style="width:${Math.max(0,Math.min(100,o.bar.pct))}%${o.bar.color?";--c:"+o.bar.color:""}"></i></div>
+    <div class="hbt small ${o.bar.cls||"muted"}">${o.bar.text}</div>`;
+  if(o.split) h += o.split;
+  if(o.minis) h += `<div class="minis">${o.minis.map(m=>`<div class="mini ${m.cls}"><div class="label">${m.label}</div><div class="val ${m.valCls||""}">${m.val}</div></div>`).join("")}</div>`;
+  return h + `</div>`;
+}
+function splitBar(g, r){   // green = others owe you, red = you owe
+  const t = g + r; if(!t) return "";
+  const gp = g/t*100;
+  return `<div class="sbar">${g?`<i class="g" style="width:${gp}%"></i>`:""}${r?`<i class="r" style="width:${100-gp}%"></i>`:""}</div>`;
+}
+function monthSpark(y){
+  const vals = MONTHS.map((_,i)=>sum(inMonth(y,i))), max = Math.max(...vals,1), now = new Date();
+  return `<div class="spark">${vals.map((v,i)=>`<i class="${(y===now.getFullYear()&&i===now.getMonth())?"cur":""}${v?"":" zero"}" style="height:${v?Math.max(6,v/max*100):6}%;animation-delay:${i*40}ms" title="${MONTHS[i]}: ${money(v)}"></i>`).join("")}</div>
+    <div class="spark-l">${MONTHS.map(m=>`<span>${m[0]}</span>`).join("")}</div>`;
+}
+function vsPrevMonth(y,m,total){   // compare with the month before (same days if this is the current month)
+  const py = m===0 ? y-1 : y, pm = m===0 ? 11 : m-1, now = new Date();
+  const isNow = y===now.getFullYear() && m===now.getMonth();
+  const lastDay = isNow ? Math.min(now.getDate(), daysIn(py,pm)) : 99;
+  const prev = inMonth(py,pm).filter(e=>parseInt(e.date.slice(8,10))<=lastDay).reduce((a,e)=>a+e.amount,0);
+  if(!prev && !total) return null;
+  const d = total - prev, nm = MONTHS[pm], same = isNow ? " (same days)" : "";
+  if(!prev) return {text:`Nothing spent in ${nm}${same}`, cls:"muted"};
+  if(d===0) return {text:`Same as ${nm}${same}`, cls:"muted"};
+  return d>0 ? {text:`▲ ${money(d)} more than ${nm}${same}`, cls:"neg"} : {text:`▼ ${money(-d)} less than ${nm}${same}`, cls:"pos"};
+}
 function cnt(v, ck, fmt){   // a number that counts up/down when it changes
   return `<span data-count="${Math.round(v)}" data-ck="${ck}" data-fmt="${fmt||""}">${fmt==="rup"?rup(v):money(Math.round(v))}</span>`;
 }
@@ -735,6 +835,44 @@ function colourSplash(col){
              {transform:`translate(-50%,-50%) scale(${k})`, opacity:0}],
             {duration:800, easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish = ()=>d.remove();
 }
+// when the "rise" entrance animation ends, drop it so it does not lock the card's position (lets the tilt work)
+document.addEventListener("animationend", (e)=>{ if(e.animationName==="rise" && e.target.classList) e.target.classList.remove("rise"); });
+// month card: gentle 3D tilt + colour glare under your finger
+document.addEventListener("pointermove", (e)=>{
+  const h = e.target.closest && e.target.closest(".hero");
+  if(!h || !motionOK()) return;
+  const r = h.getBoundingClientRect(), x = (e.clientX-r.left)/r.width, y = (e.clientY-r.top)/r.height;
+  h.classList.add("tilt");
+  h.style.setProperty("--ry", ((x-.5)*7).toFixed(2)+"deg"); h.style.setProperty("--rx", ((.5-y)*6).toFixed(2)+"deg");
+  h.style.setProperty("--gx", (x*100).toFixed(1)+"%"); h.style.setProperty("--gy", (y*100).toFixed(1)+"%");
+}, {passive:true});
+function untilt(e){
+  document.querySelectorAll(".hero.tilt").forEach(h=>{
+    if(e.type==="pointerout" && e.relatedTarget && h.contains(e.relatedTarget)) return;
+    h.classList.remove("tilt"); h.style.removeProperty("--rx"); h.style.removeProperty("--ry"); });
+}
+["pointerup","pointercancel","pointerout"].forEach(t=>document.addEventListener(t, untilt, {passive:true}));
+document.addEventListener("pointerdown", (e)=>{ const h = e.target.closest(".hero"); if(h && motionOK()){
+  const r = h.getBoundingClientRect(), x=(e.clientX-r.left)/r.width, y=(e.clientY-r.top)/r.height;
+  h.classList.add("tilt"); h.style.setProperty("--gx",(x*100)+"%"); h.style.setProperty("--gy",(y*100)+"%");
+  h.style.setProperty("--ry", ((x-.5)*7).toFixed(2)+"deg"); h.style.setProperty("--rx", ((.5-y)*6).toFixed(2)+"deg"); } }, {passive:true});
+// colour sparkles that burst out of an element (used after adding an expense)
+function sparkle(el){
+  if(!el || !motionOK()) return;
+  const r = el.getBoundingClientRect(), cx = r.left + Math.min(r.width,160)/2, cy = r.top + r.height/2;
+  const css = getComputedStyle(document.documentElement);
+  const cols = [css.getPropertyValue("--glow").trim(), css.getPropertyValue("--pri").trim(), css.getPropertyValue("--acc").trim(), "#ffffff"];
+  for(let i=0;i<18;i++){
+    const d = document.createElement("i"); d.className = "spk";
+    const c = cols[i%cols.length]; d.style.cssText = `left:${cx}px;top:${cy}px;background:${c};box-shadow:0 0 8px ${c}`;
+    document.body.appendChild(d);
+    const ang = (i/18)*Math.PI*2 + Math.random()*.3, dist = 40 + Math.random()*55;
+    d.animate([{transform:"translate(-50%,-50%) scale(.4)", opacity:1},
+               {transform:`translate(calc(-50% + ${Math.cos(ang)*dist}px), calc(-50% + ${Math.sin(ang)*dist}px)) scale(1)`, opacity:1, offset:.5},
+               {transform:`translate(calc(-50% + ${Math.cos(ang)*dist*1.3}px), calc(-50% + ${Math.sin(ang)*dist*1.3+18}px)) scale(.2)`, opacity:0}],
+              {duration:800+Math.random()*300, easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish = ()=>d.remove();
+  }
+}
 function confetti(){
   if(!motionOK()) return;
   const css = getComputedStyle(document.documentElement);
@@ -795,15 +933,15 @@ function homeView(){
       Your data lives only on this device. Save a backup file once a month.<br><button class="link" data-act="backup">Save backup now</button></div></div>`;
   }
   h += `<div class="hero">
-    <div class="label">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
+    <div class="label live">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
     <div class="big">${cnt(monthT,"h-month")}</div>`;
   if(bi.rows.length){
     const rows = bi.rows.slice().sort((a,b2)=> b2.spent/b2.b - a.spent/a.b);
     h += `<div class="bud-list">` + rows.slice(0,4).map(({c,b,spent})=>{
       const over = spent > b, pct = Math.min(100, spent/b*100);
-      return `<div class="bud-row"><span class="bn">${esc(c.icon)} ${esc(c.name)}</span>
+      return `<div class="bud-row"><span class="bn"><span class="be">${esc(c.icon)}</span> ${esc(c.name)}</span>
         <span class="small ${over?"neg":"muted"}">${over? money(spent-b)+" over" : money(b-spent)+" left of "+money(b)}</span></div>
-        <div class="bar ${over?"over":""}"><i style="width:${pct}%;${over?"":"background:"+c.color}"></i></div>`;
+        <div class="bar ${over?"over":""}"><i style="width:${pct}%;${over?"":"--c:"+c.color}"></i></div>`;
     }).join("") + (rows.length>4 ? `<div class="small muted" style="margin-top:6px">+${rows.length-4} more budgets in <button class="link" data-tab="month">Month</button></div>` : "") + `</div>`;
   }
   h += `<div class="minis">
@@ -820,7 +958,7 @@ function homeView(){
     h += `<button class="card" data-act="openPeople" style="display:block;width:100%;text-align:left">
       <div class="row between" style="margin-bottom:10px"><b>Lend & Borrow</b><span class="small link">Open ›</span></div>
       <div class="grid2"><div><div class="small muted">Others owe you</div><div class="cg" style="font-weight:800;font-size:18px">${cnt(pt.owedToMe,"h-owed")}</div></div>
-      <div><div class="small muted">You owe others</div><div class="cr" style="font-weight:800;font-size:18px">${cnt(pt.iOwe,"h-iowe")}</div></div></div></button>`;
+      <div><div class="small muted">You owe others</div><div class="cr" style="font-weight:800;font-size:18px">${cnt(pt.iOwe,"h-iowe")}</div></div></div>${splitBar(pt.owedToMe, pt.iOwe)}</button>`;
   }
   if(!D.expenses.length){
     h += `<div class="card empty"><div class="e">🧾</div><p><b>No expenses yet</b><br>Tap the <b>+</b> button to add your first one.</p></div>`;
@@ -837,12 +975,12 @@ function dailyChart(y,m){
   inMonth(y,m).forEach(e=>{ vals[parseInt(e.date.slice(8,10))-1] += e.amount; });
   const max = Math.max(...vals, 1), W = 420, H = 170, pl = 4, pb = 18, bw = (W-pl*2)/n;
   const t = todayStr();
-  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Spending by day">`;
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Spending by day"><defs><linearGradient id="cgP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--glow)"/><stop offset="1" style="stop-color:var(--pri)"/></linearGradient><linearGradient id="cgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--glow)"/><stop offset="1" style="stop-color:var(--acc)"/></linearGradient></defs>`;
   s += `<line x1="0" y1="${H-pb}" x2="${W}" y2="${H-pb}" stroke="var(--line)"/>`;
   vals.forEach((v,i)=>{
     const bh = v ? Math.max(3,(v/max)*(H-pb-22)) : 0, x = pl + i*bw + bw*0.15, w = bw*0.7;
     const isT = (y+"-"+pad(m+1)+"-"+pad(i+1))===t;
-    if(bh) s += `<rect class="b" style="animation-delay:${i*14}ms" x="${x}" y="${H-pb-bh}" width="${w}" height="${bh}" rx="2.5" fill="${isT?"var(--acc)":"var(--pri)"}"><title>${i+1} ${MONTHS[m].slice(0,3)}: ${money(v)}</title></rect>`;
+    if(bh) s += `<rect class="b" style="animation-delay:${i*14}ms" x="${x}" y="${H-pb-bh}" width="${w}" height="${bh}" rx="2.5" fill="${isT?"url(#cgA)":"url(#cgP)"}"><title>${i+1} ${MONTHS[m].slice(0,3)}: ${money(v)}</title></rect>`;
     if(n<=31 && ((i+1)%5===0 || i===0)) s += `<text x="${x+w/2}" y="${H-4}" text-anchor="middle">${i+1}</text>`;
   });
   s += `<text x="${W-4}" y="11" text-anchor="end">max ${money(max===1&&!vals.some(Boolean)?0:max)}</text></svg>`;
@@ -858,9 +996,9 @@ function breakdownCats(list, months){   // months = number of months the budget 
   return rows.map(({c,v})=>{
     const b = (c.budget||0)*months;
     let bar, note = "";
-    if(b>0){ const over=v>b; bar=`<div class="bar ${over?"over":""}"><i style="width:${Math.min(100,v/b*100)}%;${over?"":"background:"+c.color}"></i></div>`;
+    if(b>0){ const over=v>b; bar=`<div class="bar ${over?"over":""}"><i style="width:${Math.min(100,v/b*100)}%;${over?"":"--c:"+c.color}"></i></div>`;
       note = `<div class="note ${over?"over":""}">${over? money(v-b)+" over budget ("+money(b)+")" : money(b-v)+" left of "+money(b)}</div>`; }
-    else bar = `<div class="bar"><i style="width:${v/max*100}%;background:${c.color}"></i></div>`;
+    else bar = `<div class="bar"><i style="width:${v/max*100}%;--c:${c.color}"></i></div>`;
     return `<div class="brow"><div class="top2"><div class="ico" style="background:${hexA(c.color,.16)}">${esc(c.icon)}</div>
       <div class="name">${esc(c.name)}</div><b>${money(v)}</b></div>${bar}${note}</div>`;
   }).join("");
@@ -871,17 +1009,20 @@ function breakdownPays(list){
   if(!rows.length) return `<div class="muted small">Nothing yet.</div>`;
   const max = Math.max(...rows.map(r=>r.v),1);
   return rows.map(({p,v})=>`<div class="brow"><div class="top2"><div class="name">${esc(p.name)}</div><b>${money(v)}</b></div>
-    <div class="bar"><i style="width:${v/max*100}%;background:var(--acc)"></i></div></div>`).join("");
+    <div class="bar"><i style="width:${v/max*100}%;--c:var(--acc)"></i></div></div>`).join("");
 }
 
 function monthView(){
   const {y,m} = V, list = inMonth(y,m), total = sum(list), dc = daysCounted(y,m), bi = budgetInfo(list), bud = bi.B;
   let h = `<div class="switch"><button class="iconbtn" data-act="mPrev" aria-label="Previous month">‹</button>
     <div class="lbl">${MONTHS[m]} ${y}</div><button class="iconbtn" data-act="mNext" aria-label="Next month">›</button></div>`;
-  h += `<div class="stats">
-    <div class="stat c1"><div class="label">Total</div><div class="val">${cnt(total,"m-total","rup")}</div></div>
-    <div class="stat c2"><div class="label">Avg / day</div><div class="val">${cnt(dc?total/dc:0,"m-avg","rup")}</div></div>
-    <div class="stat c3"><div class="label">Budget left</div><div class="val ${bud&&bi.left<0?"neg":""}">${bud?cnt(bi.left,"m-left","rup"):"—"}</div></div></div>`;
+  const vs = vsPrevMonth(y,m,total), nd = daysIn(y,m);
+  h += heroCard({label:`Spent in ${MONTHS[m]}`, big:cnt(total,"m-total","rup"), line: vs&&vs.text, lineCls: vs&&vs.cls,
+    bar: bud ? {pct: bi.S/bud*100, over: bi.left<0, cls: bi.left<0?"neg":"muted", text: bi.left<0 ? money(-bi.left)+" over your budgets" : money(bi.left)+" left of "+money(bud)+" budget"}
+             : {pct: dc/nd*100, text: dc ? (dc===nd ? "Full month" : "Day "+dc+" of "+nd) : "This month has not started yet"},
+    minis:[{cls:"coral", label:"Avg / day", val:cnt(dc?total/dc:0,"m-avg","rup")},
+           bud ? {cls: bi.left<0?"red":"teal", label:"Budget left", val:cnt(bi.left,"m-left","rup"), valCls: bi.left<0?"neg":""}
+               : {cls:"teal", label:"Entries", val:String(list.length)}]});
   h += `<div class="card"><h2>Spending by day</h2>${dailyChart(y,m)}</div>`;
   h += `<div class="cols"><div class="card"><h2>By category</h2>${breakdownCats(list,1)}</div>
         <div class="card"><h2>By payment mode</h2>${breakdownPays(list)}</div></div>`;
@@ -895,13 +1036,13 @@ function monthView(){
 function yearChart(y){
   const vals = MONTHS.map((_,i)=>sum(inMonth(y,i)));
   const max = Math.max(...vals,1), W=420, H=190, pb=20, bw=W/12, now=new Date();
-  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Spending by month">`;
+  let s = `<svg class="chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Spending by month"><defs><linearGradient id="cgP" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--glow)"/><stop offset="1" style="stop-color:var(--pri)"/></linearGradient><linearGradient id="cgA" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:var(--glow)"/><stop offset="1" style="stop-color:var(--acc)"/></linearGradient></defs>`;
   s += `<line x1="0" y1="${H-pb}" x2="${W}" y2="${H-pb}" stroke="var(--line)"/>`;
   vals.forEach((v,i)=>{
     const bh = v ? Math.max(3,(v/max)*(H-pb-28)) : 0, x=i*bw+bw*0.18, w=bw*0.64;
     const cur = (y===now.getFullYear() && i===now.getMonth());
     s += `<g data-act="goMonth" data-m="${i}" style="cursor:pointer"><rect x="${i*bw}" y="0" width="${bw}" height="${H}" fill="transparent"/>`;
-    if(bh){ s += `<rect class="b" style="animation-delay:${i*45}ms" x="${x}" y="${H-pb-bh}" width="${w}" height="${bh}" rx="4" fill="${cur?"var(--acc)":"var(--pri)"}"><title>${MONTHS[i]}: ${money(v)}</title></rect>`;
+    if(bh){ s += `<rect class="b" style="animation-delay:${i*45}ms" x="${x}" y="${H-pb-bh}" width="${w}" height="${bh}" rx="4" fill="${cur?"url(#cgA)":"url(#cgP)"}"><title>${MONTHS[i]}: ${money(v)}</title></rect>`;
       s += `<text class="v" x="${x+w/2}" y="${H-pb-bh-4}" text-anchor="middle">${shortMoney(v)}</text>`; }
     s += `<text x="${x+w/2}" y="${H-5}" text-anchor="middle">${MONTHS[i].slice(0,3)}</text></g>`;
   });
@@ -916,10 +1057,9 @@ function yearView(){
   const best = Math.max(...vals);
   let h = `<div class="switch"><button class="iconbtn" data-act="yPrev" aria-label="Previous year">‹</button>
     <div class="lbl">${y}</div><button class="iconbtn" data-act="yNext" aria-label="Next year">›</button></div>`;
-  h += `<div class="stats">
-    <div class="stat c1"><div class="label">Total ${y}</div><div class="val">${cnt(total,"y-total","rup")}</div></div>
-    <div class="stat c2"><div class="label">Avg / month</div><div class="val">${cnt(mc?total/mc:0,"y-avg","rup")}</div></div>
-    <div class="stat c3"><div class="label">Highest</div><div class="val">${best?MONTHS[vals.indexOf(best)]:"—"}</div></div></div>`;
+  h += heroCard({label:`Spent in ${y}`, big:cnt(total,"y-total","rup"), spark: monthSpark(y),
+    minis:[{cls:"coral", label:"Avg / month", val:cnt(mc?total/mc:0,"y-avg","rup")},
+           {cls:"teal", label:"Highest", val: best ? `${MONTHS[vals.indexOf(best)].slice(0,3)} · ${rup(best)}` : "—"}]});
   h += `<div class="card"><h2>Monthly spending <span class="small muted" style="font-weight:400">· tap a month to open it</span></h2>${yearChart(y)}</div>`;
   h += `<div class="cols"><div class="card"><h2>Month by month</h2><table class="tbl"><tr><th>Month</th><th>Spent</th>${bud?"<th>Saved / Over</th>":""}</tr>`;
   vals.forEach((v,i)=>{
@@ -1063,6 +1203,7 @@ function openExpense(id){
     else { const nid = uid(); D.expenses.push({id:nid, amount:a, cat, pay, date:d, note, created:Date.now()}); V.flash = nid; }
     D.settings.lastPay = pay;
     save(); closeSheet(); render(); toast(e?"Saved":"Added "+money(a));
+    if(!e) setTimeout(()=>sparkle(document.querySelector("#main .hero .big") || $("#fab")), 260);
   };
   $("#fSave",ov).onclick = doSave;
   ov.addEventListener("keydown",(ev)=>{ if(ev.key==="Enter" && ev.target.tagName==="INPUT" && ev.target.type!=="date"){ ev.preventDefault(); doSave(); } });
@@ -1156,9 +1297,12 @@ function balText(b, name){
 }
 function peopleView(){
   const t = peopleTotals();
-  let h = `<div class="sumcards">
-    <div class="sumcard g"><div class="label cg">Others owe you</div><div class="val cg">${cnt(t.owedToMe,"p-owed")}</div></div>
-    <div class="sumcard r"><div class="label cr">You owe others</div><div class="val cr">${cnt(t.iOwe,"p-iowe")}</div></div></div>`;
+  const net = t.owedToMe - t.iOwe;
+  let h = heroCard({label: net>0 ? "Overall, you get back" : net<0 ? "Overall, you need to pay" : "Lend & Borrow",
+    big: net ? cnt(Math.abs(net),"p-net") : "All settled", bigColor: net>0 ? "var(--green)" : net<0 ? "var(--red)" : "",
+    split: splitBar(t.owedToMe, t.iOwe),
+    minis:[{cls:"green", label:"Others owe you", val:cnt(t.owedToMe,"p-owed"), valCls:"cg"},
+           {cls:"red", label:"You owe others", val:cnt(t.iOwe,"p-iowe"), valCls:"cr"}]});
   h += `<div style="margin-bottom:14px"><button class="btn primary block" data-act="addPerson">+ Add person</button></div>`;
   if(!D.people.length){
     return h + `<div class="card empty"><div class="e">🤝</div><p><b>No one added yet</b><br>Add a friend or family member, then note money you <b>gave</b> them or <b>got</b> from them.<br><span class="small">This is kept separate from your expenses.</span></p></div>`;
@@ -1179,8 +1323,8 @@ function personView(pid){
   const p = personById(pid), b = balanceOf(pid), bt = balText(b, p.name);
   const ls = D.loans.filter(l=>l.person===pid);
   let h = "";
-  h += `<div class="card pcard">${avatar(p)}<div style="font-weight:800;font-size:18px">${esc(p.name)}</div>
-    <div class="big2 ${bt.cls}" style="margin-top:6px">${cnt(Math.abs(b),"p-bal-"+pid)}</div>
+  h += `<div class="card pcard glow">${avatar(p)}<div style="font-weight:800;font-size:18px">${esc(p.name)}</div>
+    <div class="big2 ${bt.cls}" style="margin-top:6px;--big:${b>0?"var(--green)":b<0?"var(--red)":"var(--text)"}">${cnt(Math.abs(b),"p-bal-"+pid)}</div>
     <div class="${bt.cls}" style="font-weight:700;margin-bottom:14px">${esc(bt.lb)}</div>
     <div class="grid2"><button class="btn give" data-act="gave" data-id="${pid}">↑ I gave</button><button class="btn get" data-act="got" data-id="${pid}">↓ I got</button></div>
     <div class="row" style="justify-content:center;gap:18px;margin-top:12px">
@@ -1389,10 +1533,11 @@ function creditsView(){
   const {y,m} = V, list = creditsIn(y,m), cr = sum(list), sp = sum(inMonth(y,m)), left = cr - sp;
   let h = `<div class="switch"><button class="iconbtn" data-act="mPrev" aria-label="Previous month">‹</button>
     <div class="lbl">${MONTHS[m]} ${y}</div><button class="iconbtn" data-act="mNext" aria-label="Next month">›</button></div>`;
-  h += `<div class="stats">
-    <div class="stat"><div class="label cg">Credits</div><div class="val cg">${cnt(cr,"c-in","rup")}</div></div>
-    <div class="stat"><div class="label cr">Spent</div><div class="val">${cnt(sp,"c-out","rup")}</div></div>
-    <div class="stat"><div class="label" style="color:var(--pri)">Left</div><div class="val ${left<0?"cr":""}">${cnt(left,"c-left","rup")}</div></div></div>`;
+  h += heroCard({label:`Credits in ${MONTHS[m]}`, big:cnt(cr,"c-in","rup"), bigColor:"var(--green)",
+    bar: cr ? {pct: sp/cr*100, over: sp>cr, cls: sp>cr?"neg":"muted", text: sp>cr ? money(sp-cr)+" more spent than credits" : Math.round(sp/cr*100)+"% of credits spent"}
+            : {pct: 0, text: sp ? "No credits added this month" : "No credits or spending yet"},
+    minis:[{cls:"coral", label:"Spent", val:cnt(sp,"c-out","rup")},
+           {cls: left<0?"red":"green", label:"Left", val:cnt(left,"c-left","rup"), valCls: left<0?"cr":"cg"}]});
   h += `<div style="margin-bottom:14px"><button class="btn primary block" data-act="addCredit">+ Add credit</button></div>`;
   h += `<div class="card small"><div class="row between"><span class="muted">Credits in ${y}</span><b class="cg">${money(sum(creditsYear(y)))}</b></div>
     <div class="row between" style="margin-top:6px"><span class="muted">Spent in ${y}</span><b>${money(sum(inYear(y)))}</b></div>
@@ -1495,10 +1640,12 @@ function projectsView(){
   if(V.project && projectById(V.project)) return projectView(V.project);
   const inv = D.pmoves.filter(e=>e.kind==="invest").reduce((a,e)=>a+e.amount,0);
   const pro = D.pmoves.filter(e=>e.kind==="profit").reduce((a,e)=>a+e.amount,0);
-  let h = `<div class="stats">
-    <div class="stat"><div class="label" style="color:var(--acc)">Invested</div><div class="val">${cnt(inv,"pr-all","rup")}</div></div>
-    <div class="stat"><div class="label cg">Profit</div><div class="val cg">${cnt(pro,"pr-pro","rup")}</div></div>
-    <div class="stat"><div class="label" style="color:var(--pri)">Active</div><div class="val">${D.projects.filter(p=>!p.done).length}</div></div></div>`;
+  const out = D.pmoves.filter(e=>e.kind==="payout").reduce((a,e)=>a+e.amount,0), tot = inv + pro, still = tot - out;
+  const nAct = D.projects.filter(p=>!p.done).length;
+  let h = heroCard({label:"Invested in all projects", big:cnt(inv,"pr-all","rup"),
+    bar: tot ? {pct: still/tot*100, over: still<0, cls: still<0?"neg":"muted", text: still<0 ? money(-still)+" more paid out than came in" : money(still)+" still in projects"+(out?" · "+money(out)+" paid out":"")} : null,
+    minis:[{cls:"green", label:"Profit", val:cnt(pro,"pr-pro","rup"), valCls:"cg"},
+           {cls:"teal", label:"Active", val:`${nAct}<span class="small muted" style="font-weight:600"> of ${D.projects.length}</span>`}]});
   h += `<div style="margin-bottom:14px"><button class="btn primary block" data-act="addProject">+ New project</button></div>`;
   if(!D.projects.length){
     return h + `<div class="card empty"><div class="e pe">${PICON}</div><p><b>No projects yet</b><br>Create a project, then add money <b>invested</b> by you or others,<br><b>profit</b> it makes, and money <b>paid out</b>.<br><span class="small">Projects are kept separate from your daily expenses.</span></p></div>`;
@@ -1575,8 +1722,8 @@ function projectOverview(pid){
   if(people.length){
     h += `<div class="sec-t">By person</div>` + people.map(r=>`<div class="who">
       <div class="who-h"><div class="av sm" style="background:${personColor(r.name)}">${esc(initials(r.name))}</div><div class="who-n">${esc(r.name)}</div></div>
-      ${r.inv ? `<div class="who-r"><span style="color:var(--acc)">Invested</span><div class="bar"><i style="width:${r.inv/maxP*100}%;background:var(--acc)"></i></div><b>${money(r.inv)}</b></div>` : ""}
-      ${r.out ? `<div class="who-r"><span class="cg">Paid out</span><div class="bar"><i style="width:${r.out/maxP*100}%;background:var(--green)"></i></div><b>${money(r.out)}</b></div>` : ""}
+      ${r.inv ? `<div class="who-r"><span style="color:var(--acc)">Invested</span><div class="bar"><i style="width:${r.inv/maxP*100}%;--c:var(--acc)"></i></div><b>${money(r.inv)}</b></div>` : ""}
+      ${r.out ? `<div class="who-r"><span class="cg">Paid out</span><div class="bar"><i style="width:${r.out/maxP*100}%;--c:var(--green)"></i></div><b>${money(r.out)}</b></div>` : ""}
     </div>`).join("");
   }
   return h + `</div>`;
@@ -1584,7 +1731,7 @@ function projectOverview(pid){
 
 function projectView(pid){
   const p = projectById(pid), t = projTotals(pid), all = movesOf(pid);
-  let h = `<div class="card pcard"><div class="pe-big">${p.done?"✅":PICON}</div><div style="font-weight:800;font-size:18px">${esc(p.name)}</div>
+  let h = `<div class="card pcard glow"><div class="pe-big">${p.done?"✅":PICON}</div><div style="font-weight:800;font-size:18px">${esc(p.name)}</div>
     <div class="pstats">
       <div><div class="label" style="color:var(--acc)">Invested</div><div class="v">${cnt(t.inv,"pj-inv-"+pid)}</div></div>
       <div><div class="label cg">Profit</div><div class="v cg">${cnt(t.pro,"pj-pro-"+pid)}</div></div>

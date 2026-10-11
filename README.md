@@ -46,6 +46,7 @@
 - Tip on a computer: type `120+80` and it adds them for you.
 
 ### 📊 Month & year summary
+- A summary card at the top of every page, with how much more or less you spent than last month.
 - Monthly total, average per day and budget left.
 - A chart of spending by day, plus breakdowns by category and by payment mode.
 - A yearly view with all 12 months, a chart, and your highest month.
@@ -83,7 +84,7 @@
 ### 🎨 Look & feel
 - 4 colour themes: **Black & Gold** (default), **Purple & Black**, **Blue & Black** and **Black & White**.
 - Automatic **dark mode**.
-- Colour effects that follow your theme: a glowing header, a flowing border on the month card, shine on progress bars, a ripple where you tap, and a colour splash when you change the theme.
+- Colour effects that follow your theme: a glowing header, a flowing border on the summary cards, glossy progress bars with a glowing tip, a card that tilts when you touch it, sparkles when you add an expense, a ripple where you tap, and a colour splash when you change the theme.
 - Smooth animations: counting numbers, growing charts, confetti when you settle up. You can switch them off.
 
 ### 💾 Backup & export
