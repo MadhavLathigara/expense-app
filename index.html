@@ -15,14 +15,14 @@
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
 <style>
 /* ---- colour themes: P = main colour, PD = main colour in dark mode, A = accent, T = third, H1/H2 = header ---- */
-[data-theme="gold"]  {--P:#1F1F24;--PD:#E2B64B;--A:#D9A21B;--T:#2F9E6E;--H1:#2E2E35;--H2:#111114;--onP:#fff;--onPD:#1A1406;--onA:#1A1406}
+[data-theme="gold"]  {--P:#1F1F24;--PD:#E2B64B;--A:#D9A21B;--T:#2F9E6E;--H1:#2E2E35;--H2:#111114;--onP:#fff;--onPD:#1A1406;--onA:#1A1406;--G:#D9A21B;--GD:#E2B64B}
 /* Purple / Blue: main colour first, black second. Black & White: black in light mode, white in dark mode. AD/onAD = second colour in dark mode (the screen is already black, so a stronger shade of the main colour is used) */
-[data-theme="purple"]{--P:#5B2EDB;--PD:#B69CFF;--A:#17141F;--AD:#8B5CF6;--T:#2F9E6E;--H1:#6D3FE0;--H2:#3B1A94;--onP:#fff;--onPD:#1A1033;--onA:#fff;--onAD:#fff}
-[data-theme="blue"]  {--P:#2058D8;--PD:#8DB8FF;--A:#14171F;--AD:#3B82F6;--T:#2F9E6E;--H1:#2E6BEA;--H2:#173A8C;--onP:#fff;--onPD:#0A1830;--onA:#fff;--onAD:#fff}
-[data-theme="mono"]  {--P:#111111;--PD:#F2F2F2;--A:#000000;--AD:#FFFFFF;--T:#2F9E6E;--H1:#2B2B2B;--H2:#000000;--onP:#fff;--onPD:#111111;--onA:#fff;--onAD:#000000}
+[data-theme="purple"]{--P:#5B2EDB;--PD:#B69CFF;--A:#17141F;--AD:#8B5CF6;--T:#2F9E6E;--H1:#6D3FE0;--H2:#3B1A94;--onP:#fff;--onPD:#1A1033;--onA:#fff;--onAD:#fff;--G:#8B5CF6;--GD:#B69CFF}
+[data-theme="blue"]  {--P:#2058D8;--PD:#8DB8FF;--A:#14171F;--AD:#3B82F6;--T:#2F9E6E;--H1:#2E6BEA;--H2:#173A8C;--onP:#fff;--onPD:#0A1830;--onA:#fff;--onAD:#fff;--G:#3B82F6;--GD:#8DB8FF}
+[data-theme="mono"]  {--P:#111111;--PD:#F2F2F2;--A:#000000;--AD:#FFFFFF;--T:#2F9E6E;--H1:#2B2B2B;--H2:#000000;--onP:#fff;--onPD:#111111;--onA:#fff;--onAD:#000000;--G:#8A8A8A;--GD:#FFFFFF}
 :root{
   --bg:#F5F6F8; --card:#FFFFFF; --text:#1E2230; --muted:#6B7080; --line:#E7E8EE;
-  --pri:var(--P); --on-pri:var(--onP); --acc:var(--A); --on-acc:var(--onA); --third:var(--T); --big:var(--H2);
+  --pri:var(--P); --on-pri:var(--onP); --acc:var(--A); --on-acc:var(--onA); --third:var(--T); --big:var(--H2); --glow:var(--G);
   --pri-l:#EEF0F4; --acc-l:#FDF0EA; --red:#C8443A; --green:#22885A; --red-l:#FBEAEA; --green-l:#E5F4EC;
   --shadow:0 1px 2px rgba(20,20,40,.05),0 4px 14px rgba(20,20,40,.06);
   --radius:16px; --nav-h:64px;
@@ -36,7 +36,7 @@
 }
 @media (prefers-color-scheme:dark){
   :root{ --bg:#0D0F14; --card:#171A21; --text:#E8EAF0; --muted:#9AA0AE; --line:#2A2E38;
-    --pri:var(--PD); --on-pri:var(--onPD); --big:var(--PD); --acc:var(--AD, var(--A)); --on-acc:var(--onAD, var(--onA)); --red:#F07167; --green:#5CC98A;
+    --pri:var(--PD); --on-pri:var(--onPD); --big:var(--PD); --acc:var(--AD, var(--A)); --on-acc:var(--onAD, var(--onA)); --glow:var(--GD); --red:#F07167; --green:#5CC98A;
     --pri-l:#232733; --acc-l:#2E241F; --red-l:#33201F; --green-l:#1C2E25; --shadow:none; color-scheme:dark; }
   @supports (color: color-mix(in srgb, red 50%, blue)){
     :root{ --bg:color-mix(in srgb, var(--P) 9%, #0B0D12); --card:color-mix(in srgb, var(--P) 7%, #15181F);
@@ -370,6 +370,57 @@ main.fresh svg.chart text.v{animation:fadeIn .4s ease .5s both}
 .pill.on,.seg button.on{animation:pop .3s ease}
 .conf{position:fixed;width:9px;height:14px;border-radius:2px;z-index:70;pointer-events:none;left:50%;top:42%}
 html.theme-fade, html.theme-fade *{transition:background-color .45s ease,color .45s ease,border-color .45s ease,fill .45s ease!important}
+/* ================= colour effects (follow the theme; motion stops when Animations is off) ================= */
+header.top{position:relative;overflow:hidden;isolation:isolate}
+header.top::before{content:"";position:absolute;inset:-60% -25%;z-index:-1;pointer-events:none;
+  background:radial-gradient(closest-side at 18% 35%, rgba(255,255,255,.10), transparent),
+             radial-gradient(closest-side at 82% 75%, rgba(255,255,255,.07), transparent);
+  animation:aurora 16s ease-in-out infinite alternate}
+header.top::after{content:"";position:absolute;left:0;bottom:0;width:45%;height:2px;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.55),transparent);transform:translateX(-110%);
+  animation:lineSweep 6s ease-in-out 1s infinite}
+@keyframes aurora{0%{transform:translate(-7%,-5%) rotate(0deg) scale(1)}100%{transform:translate(7%,6%) rotate(10deg) scale(1.12)}}
+@keyframes lineSweep{0%{transform:translateX(-110%)}55%,100%{transform:translateX(330%)}}
+.hero{position:relative;isolation:isolate}
+.hero::before{content:"";position:absolute;inset:-1px;border-radius:inherit;padding:1.6px;pointer-events:none;
+  background:linear-gradient(115deg,transparent 0%,var(--glow) 22%,transparent 42%,transparent 58%,var(--pri) 78%,transparent 100%);
+  background-size:260% 260%;animation:borderFlow 8s linear infinite;
+  -webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;
+  mask:linear-gradient(#000 0 0) content-box exclude,linear-gradient(#000 0 0)}
+@keyframes borderFlow{0%{background-position:0% 50%}100%{background-position:260% 50%}}
+.bar > i{position:relative;overflow:hidden}
+.bar > i::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:linear-gradient(90deg,transparent,rgba(255,255,255,.5),transparent);transform:translateX(-100%);
+  animation:barSheen 3.4s ease-in-out 1.4s infinite}
+@keyframes barSheen{0%{transform:translateX(-100%)}45%,100%{transform:translateX(100%)}}
+.fab{position:relative}
+.fab::before{content:"";position:absolute;inset:0;border-radius:inherit;background:var(--acc);z-index:-1;pointer-events:none;
+  animation:halo 2.8s ease-out infinite}
+@keyframes halo{0%{transform:scale(1);opacity:.5}70%,100%{transform:scale(1.55);opacity:0}}
+.tab{position:relative}
+.tab.on::before{content:"";position:absolute;top:0;left:50%;width:24px;margin-left:-12px;height:3px;border-radius:0 0 4px 4px;
+  background:var(--pri);box-shadow:0 0 10px var(--glow);animation:growX .35s cubic-bezier(.2,.75,.2,1) both}
+.rp-host{position:relative;overflow:hidden} .rp-clip{overflow:hidden}
+.rp{position:absolute;border-radius:50%;pointer-events:none;background:currentColor;opacity:.2;transform:scale(0);
+  animation:ripple .55s ease-out forwards}
+@keyframes ripple{to{transform:scale(1);opacity:0}}
+.splash{position:fixed;width:20px;height:20px;border-radius:50%;z-index:65;pointer-events:none}
+@supports (color: color-mix(in srgb, red 50%, blue)){
+  header.top::before{background:radial-gradient(closest-side at 18% 35%, color-mix(in srgb, var(--GD) 42%, transparent), transparent),
+                                radial-gradient(closest-side at 82% 75%, color-mix(in srgb, var(--GD) 28%, transparent), transparent)}
+  header.top::after{background:linear-gradient(90deg,transparent,color-mix(in srgb, var(--GD) 85%, #fff),transparent)}
+  .hero{box-shadow:var(--shadow),0 14px 34px -16px color-mix(in srgb, var(--glow) 60%, transparent)}
+  .bar > i{background:linear-gradient(90deg,var(--pri),color-mix(in srgb, var(--pri) 55%, var(--glow)))}
+  .fab{box-shadow:0 8px 22px -4px color-mix(in srgb, var(--acc) 55%, transparent),0 3px 8px rgba(0,0,0,.18)}
+  .tile{background:radial-gradient(150px 90px at 0% 0%, color-mix(in srgb, var(--glow) 14%, transparent), transparent 72%),var(--card)}
+}
+.bar.over > i{background:var(--red)}
+@supports ((-webkit-background-clip:text) or (background-clip:text)){
+  .hero .big{background:linear-gradient(100deg,var(--big) 0%,var(--big) 40%,var(--glow) 50%,var(--big) 60%,var(--big) 100%);
+    background-size:260% 100%;background-position:100% 0;-webkit-background-clip:text;background-clip:text;
+    color:transparent;-webkit-text-fill-color:transparent;animation:sheen 7s ease-in-out 1.2s infinite}
+}
+@keyframes sheen{0%{background-position:100% 0}30%,100%{background-position:0% 0}}
 /* on/off switch */
 .switch2{width:52px;height:32px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background-color .2s ease}
 .switch2::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
@@ -658,6 +709,31 @@ function animOut(id, done){        // slide an item away, then redraw
   if(!el || !motionOK()){ done(); return; }
   el.style.height = el.offsetHeight + "px"; el.classList.add("leaving");
   setTimeout(done, 280);
+}
+// ---- colour effects: ripple where you tap, colour splash when the theme changes ----
+let lastTap = null;
+document.addEventListener("pointerdown", (e)=>{
+  lastTap = {x:e.clientX, y:e.clientY};
+  if(!motionOK()) return;
+  const el = e.target.closest(".btn,.tile,.item,.chip,.pill,.th,.seg button,.srow");
+  if(!el) return;
+  const pos = getComputedStyle(el).position;
+  el.classList.add(pos==="static" ? "rp-host" : "rp-clip");
+  const r = el.getBoundingClientRect(), size = Math.max(r.width, r.height)*2.2;
+  const d = document.createElement("span"); d.className = "rp";
+  d.style.cssText = `width:${size}px;height:${size}px;left:${e.clientX-r.left-size/2}px;top:${e.clientY-r.top-size/2}px`;
+  el.appendChild(d); setTimeout(()=>d.remove(), 600);
+}, {passive:true});
+function colourSplash(col){
+  if(!motionOK()) return;
+  const x = lastTap ? lastTap.x : innerWidth/2, y = lastTap ? lastTap.y : innerHeight/2;
+  const r = Math.hypot(Math.max(x, innerWidth-x), Math.max(y, innerHeight-y)), k = r/10;
+  const d = document.createElement("i"); d.className = "splash";
+  d.style.cssText = `left:${x}px;top:${y}px;background:${col}`; document.body.appendChild(d);
+  d.animate([{transform:"translate(-50%,-50%) scale(0)", opacity:.6},
+             {transform:`translate(-50%,-50%) scale(${k})`, opacity:.35, offset:.55},
+             {transform:`translate(-50%,-50%) scale(${k})`, opacity:0}],
+            {duration:800, easing:"cubic-bezier(.2,.7,.2,1)"}).onfinish = ()=>d.remove();
 }
 function confetti(){
   if(!motionOK()) return;
@@ -1704,6 +1780,7 @@ document.addEventListener("click", async (ev)=>{
   else if(act==="restore") $("#restoreFile").click();
   else if(act==="theme"){
     const h=document.documentElement; if(motionOK()){ h.classList.add("theme-fade"); setTimeout(()=>h.classList.remove("theme-fade"),550); }
+    if(THEMES[a.dataset.id] && a.dataset.id!==D.settings.theme) colourSplash(THEMES[a.dataset.id].c[0]);
     D.settings.theme=a.dataset.id; applyTheme(); save(); render(); }
   else if(act==="toggleAnim"){ D.settings.anim = D.settings.anim===false; applyTheme(); save(); render(); toast(D.settings.anim?"Animations on":"Animations off"); }
   else if(act==="openPeople") go("people");

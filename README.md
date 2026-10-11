@@ -83,6 +83,7 @@
 ### 🎨 Look & feel
 - 4 colour themes: **Black & Gold** (default), **Purple & Black**, **Blue & Black** and **Black & White**.
 - Automatic **dark mode**.
+- Colour effects that follow your theme: a glowing header, a flowing border on the month card, shine on progress bars, a ripple where you tap, and a colour splash when you change the theme.
 - Smooth animations: counting numbers, growing charts, confetti when you settle up. You can switch them off.
 
 ### 💾 Backup & export
