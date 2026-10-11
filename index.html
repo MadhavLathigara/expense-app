@@ -17,6 +17,8 @@
 /* ---- colour themes: P = main colour, PD = main colour in dark mode, A = accent, T = third, H1/H2 = header ---- */
 [data-theme="gold"]  {--P:#1F1F24;--PD:#E2B64B;--A:#D9A21B;--T:#2F9E6E;--H1:#2E2E35;--H2:#111114;--onP:#fff;--onPD:#1A1406;--onA:#1A1406}
 [data-theme="purple"]{--P:#1E1A28;--PD:#B69CFF;--A:#8B5CF6;--T:#2F9E6E;--H1:#2B2338;--H2:#0F0C15;--onP:#fff;--onPD:#1A1033;--onA:#fff}
+[data-theme="blue"]  {--P:#181C24;--PD:#8DB8FF;--A:#2F74E8;--T:#2F9E6E;--H1:#232A36;--H2:#0B0E14;--onP:#fff;--onPD:#0A1830;--onA:#fff}
+[data-theme="rose"]  {--P:#221D1E;--PD:#EDB4A2;--A:#C8826B;--T:#2F9E6E;--H1:#312A2B;--H2:#131011;--onP:#fff;--onPD:#2A140E;--onA:#1F0F0A}
 :root{
   --bg:#F5F6F8; --card:#FFFFFF; --text:#1E2230; --muted:#6B7080; --line:#E7E8EE;
   --pri:var(--P); --on-pri:var(--onP); --acc:var(--A); --on-acc:var(--onA); --third:var(--T); --big:var(--H2);
@@ -420,7 +422,9 @@ const YOU = "You";
 const DEFAULT_THEME = "gold";
 const THEMES = {
   gold:   {name:"Black & Gold",   c:["#1F1F24","#D9A21B"], bar:"#111114"},
-  purple: {name:"Purple & Black", c:["#1E1A28","#8B5CF6"], bar:"#0F0C15"}
+  purple: {name:"Purple & Black", c:["#1E1A28","#8B5CF6"], bar:"#0F0C15"},
+  blue:   {name:"Blue & Black",   c:["#181C24","#2F74E8"], bar:"#0B0E14"},
+  rose:   {name:"Rose Gold & Black", c:["#221D1E","#C8826B"], bar:"#131011"}
 };
 function applyTheme(){
   const t = THEMES[D.settings.theme] ? D.settings.theme : DEFAULT_THEME;
@@ -1383,8 +1387,15 @@ function normWho(n){ n = (n||"").trim(); return (!n || /^(me|you|myself|self)$/i
 function personColor(name){
   if(name===YOU) return "var(--pri)";
   let h=0; for(const ch of name.toLowerCase()) h=(h*31+ch.charCodeAt(0))>>>0;
+  // skip colours that look too much like your own ("You") colour in the current theme
+  const me = hexRGB(getComputedStyle(document.documentElement).getPropertyValue("--pri").trim());
+  for(let k=0;k<AV_COLORS.length;k++){
+    const c = AV_COLORS[(h+k) % AV_COLORS.length], o = hexRGB(c);
+    if(!me || !o || Math.hypot(me[0]-o[0], me[1]-o[1], me[2]-o[2]) > 110) return c;
+  }
   return AV_COLORS[h % AV_COLORS.length];
 }
+function hexRGB(x){ const m=/^#([0-9a-f]{6})$/i.exec(x||""); if(!m) return null; const n=parseInt(m[1],16); return [n>>16&255, n>>8&255, n&255]; }
 function initials(name){ return name===YOU ? "You" : (name.trim().split(/\s+/).slice(0,2).map(w=>w[0]||"").join("").toUpperCase() || "?"); }
 function projTotals(pid){
   const inv = sum(movesOf(pid,"invest")), pro = sum(movesOf(pid,"profit")), out = sum(movesOf(pid,"payout"));
