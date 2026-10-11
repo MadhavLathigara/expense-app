@@ -81,7 +81,7 @@
 - Saves while you type. Pin, search, share and delete notes.
 
 ### 🎨 Look & feel
-- 4 colour themes: **Black & Gold** (default), **Purple & Black**, **Blue & Black** and **Rose Gold & Black**.
+- 4 colour themes: **Black & Gold** (default), **Purple & Black**, **Blue & Black** and **Black & White**.
 - Automatic **dark mode**.
 - Smooth animations: counting numbers, growing charts, confetti when you settle up. You can switch them off.
 
@@ -119,7 +119,7 @@
   <tr>
     <td align="center"><img src="screenshots/theme-purple.png" width="200"><br><sub>Purple & Black</sub></td>
     <td align="center"><img src="screenshots/theme-blue.png" width="200"><br><sub>Blue & Black</sub></td>
-    <td align="center"><img src="screenshots/theme-rose.png" width="200"><br><sub>Rose Gold & Black</sub></td>
+    <td align="center"><img src="screenshots/theme-mono.png" width="200"><br><sub>Black & White</sub></td>
   </tr>
   <tr>
     <td align="center"><img src="screenshots/theme-purple-dark.png" width="200"><br><sub>Purple & Black (dark mode)</sub></td>

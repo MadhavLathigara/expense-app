@@ -16,10 +16,10 @@
 <style>
 /* ---- colour themes: P = main colour, PD = main colour in dark mode, A = accent, T = third, H1/H2 = header ---- */
 [data-theme="gold"]  {--P:#1F1F24;--PD:#E2B64B;--A:#D9A21B;--T:#2F9E6E;--H1:#2E2E35;--H2:#111114;--onP:#fff;--onPD:#1A1406;--onA:#1A1406}
-/* Purple / Blue / Rose Gold: main colour first, black second. AD/onAD = second colour in dark mode (the screen is already black, so a stronger shade of the main colour is used) */
+/* Purple / Blue: main colour first, black second. Black & White: black in light mode, white in dark mode. AD/onAD = second colour in dark mode (the screen is already black, so a stronger shade of the main colour is used) */
 [data-theme="purple"]{--P:#5B2EDB;--PD:#B69CFF;--A:#17141F;--AD:#8B5CF6;--T:#2F9E6E;--H1:#6D3FE0;--H2:#3B1A94;--onP:#fff;--onPD:#1A1033;--onA:#fff;--onAD:#fff}
 [data-theme="blue"]  {--P:#2058D8;--PD:#8DB8FF;--A:#14171F;--AD:#3B82F6;--T:#2F9E6E;--H1:#2E6BEA;--H2:#173A8C;--onP:#fff;--onPD:#0A1830;--onA:#fff;--onAD:#fff}
-[data-theme="rose"]  {--P:#A8636E;--PD:#F0B8B4;--A:#1C1718;--AD:#D0868F;--T:#2F9E6E;--H1:#BE7E82;--H2:#7E4652;--onP:#fff;--onPD:#2A1418;--onA:#fff;--onAD:#1C1718}
+[data-theme="mono"]  {--P:#111111;--PD:#F2F2F2;--A:#000000;--AD:#FFFFFF;--T:#2F9E6E;--H1:#2B2B2B;--H2:#000000;--onP:#fff;--onPD:#111111;--onA:#fff;--onAD:#000000}
 :root{
   --bg:#F5F6F8; --card:#FFFFFF; --text:#1E2230; --muted:#6B7080; --line:#E7E8EE;
   --pri:var(--P); --on-pri:var(--onP); --acc:var(--A); --on-acc:var(--onA); --third:var(--T); --big:var(--H2);
@@ -425,7 +425,7 @@ const THEMES = {
   gold:   {name:"Black & Gold",      c:["#1F1F24","#D9A21B"], bar:"#111114"},
   purple: {name:"Purple & Black",    c:["#5B2EDB","#17141F"], bar:"#3B1A94"},
   blue:   {name:"Blue & Black",      c:["#2058D8","#14171F"], bar:"#173A8C"},
-  rose:   {name:"Rose Gold & Black", c:["#A8636E","#1C1718"], bar:"#7E4652"}
+  mono:   {name:"Black & White",     c:["#111111","#FFFFFF"], bar:"#000000"}
 };
 function applyTheme(){
   const t = THEMES[D.settings.theme] ? D.settings.theme : DEFAULT_THEME;
@@ -863,7 +863,7 @@ function settingsView(){
   let h = `<div class="card"><div class="row between"><div><b>Animations</b><div class="small muted">Smooth movement, counting numbers, confetti</div></div>
     <button class="switch2 ${D.settings.anim!==false?"on":""}" data-act="toggleAnim" role="switch" aria-checked="${D.settings.anim!==false}" aria-label="Animations"></button></div></div>`;
   h += `<div class="card"><h2>Colour theme</h2><div class="themes">${Object.entries(THEMES).map(([id,t])=>
-    `<button class="th ${D.settings.theme===id?"on":""}" data-act="theme" data-id="${id}"><div class="sw2"><i style="background:${t.c[0]}"></i><i style="background:${t.c[1]}"></i></div>${esc(t.name)}</button>`).join("")}</div></div>`;
+    `<button class="th ${D.settings.theme===id?"on":""}" data-act="theme" data-id="${id}"><div class="sw2"><i style="background:${t.c[0]}"></i><i style="background:${t.c[1]}${t.c[1]==="#FFFFFF"?";box-shadow:inset 0 0 0 1.5px rgba(0,0,0,.18)":""}"></i></div>${esc(t.name)}</button>`).join("")}</div></div>`;
   h += `<div class="card"><h2>Categories & monthly budget</h2>`;
   D.categories.forEach(c=>{
     h += `<button class="srow" data-act="editCat" data-id="${c.id}"><div class="ico" style="background:${hexA(c.color,.16)}">${esc(c.icon)}</div>
