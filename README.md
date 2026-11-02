@@ -47,6 +47,8 @@
 
 ### 📊 Month & year summary
 - A summary card at the top of every page, with how much more or less you spent than last month.
+- Tap the month card on Home to flip it and see where your money went, by category.
+- Home shows only this month's entries. Older months are in the Month tab.
 - Monthly total, average per day and budget left.
 - A chart of spending by day, plus breakdowns by category and by payment mode.
 - A yearly view with all 12 months, a chart, and your highest month.

@@ -487,6 +487,42 @@ main.fresh .bud-row:nth-of-type(2) .be{animation-delay:.12s} main.fresh .bud-row
   .donut{filter:drop-shadow(0 6px 14px color-mix(in srgb,var(--glow) 32%,transparent))}
   .toast{box-shadow:0 6px 18px rgba(0,0,0,.2),0 0 0 1.5px color-mix(in srgb,var(--glow) 70%,transparent),0 0 18px color-mix(in srgb,var(--glow) 35%,transparent)}
 }
+/* ---- more interaction + colour: flip card, tappable boxes, tiles, list, chips, scroll reveal ---- */
+.hero.flipme{cursor:pointer}
+.flip-ic{position:absolute;top:12px;right:12px;width:28px;height:28px;border-radius:50%;display:grid;place-items:center;font-size:15px;font-weight:700;
+  background:var(--pri-l);color:var(--pri);z-index:2;transition:transform .4s cubic-bezier(.3,1.5,.5,1)}
+.hero.flipme:active .flip-ic{transform:rotate(-180deg)}
+.hero.flipside .pov-top{margin:8px 0 10px}
+@media (max-width:520px){ .hero.flipside .pov-top{flex-direction:column;align-items:stretch;gap:8px} .hero.flipside .donut{width:150px;height:150px;margin:0 auto} }
+.hero.flipside .lg small{font-weight:600;margin-left:4px}
+button.mini{display:block;width:100%;text-align:left;transition:transform .15s ease}
+button.mini:active{transform:scale(.95)}
+.lbx{border-radius:12px;padding:10px 12px}
+.lbx.g{background:var(--green-l)} .lbx.r{background:var(--red-l)}
+.tile{--tc:var(--glow)}
+.tile[data-tab=credits]{--tc:var(--green)} .tile[data-tab=notes]{--tc:#F2A541}
+.tile .ti{width:38px;height:38px;border-radius:12px;display:grid;place-items:center;font-size:20px;line-height:1}
+.tile .ti-p{height:38px}
+.tile:active .ti{animation:wiggle .45s ease}
+@keyframes wiggle{0%,100%{transform:rotate(0)}25%{transform:rotate(-12deg) scale(1.08)}60%{transform:rotate(9deg)}}
+.day-h .dt{padding:2px 9px;border-radius:99px;background:var(--pri-l);color:var(--pri);font-size:12px}
+.day-h.is-today span:first-child::before{content:"";display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:6px;vertical-align:1px;
+  background:var(--glow);animation:livePulse 2.2s ease-out infinite}
+.fab svg{transition:transform .35s cubic-bezier(.3,1.6,.5,1)}
+.fab:active svg{transform:rotate(90deg) scale(.88)}
+.sr{opacity:0;transform:translateY(18px) scale(.98)}
+.sr.in{opacity:1;transform:none;transition:opacity .45s ease,transform .55s cubic-bezier(.2,.75,.2,1)!important}
+@supports (color: color-mix(in srgb, red 50%, blue)){
+  .tile{background:radial-gradient(150px 90px at 0% 0%, color-mix(in srgb, var(--tc) 16%, transparent), transparent 72%),var(--card);
+    border-bottom:2px solid color-mix(in srgb, var(--tc) 50%, var(--line))}
+  .tile .ti{background:linear-gradient(135deg,color-mix(in srgb,var(--tc) 32%,transparent),color-mix(in srgb,var(--tc) 10%,transparent));
+    box-shadow:inset 0 0 0 1px color-mix(in srgb,var(--tc) 30%,transparent)}
+  .item:active{background:color-mix(in srgb,var(--cc,var(--pri)) 12%,var(--card))}
+  .chip.on{border-color:var(--cc,var(--pri));background:color-mix(in srgb,var(--cc,var(--pri)) 15%,var(--card));
+    box-shadow:inset 0 0 0 1px var(--cc,var(--pri)),0 6px 16px -8px var(--cc,var(--pri))}
+  .lbx.g{background:linear-gradient(135deg,var(--green-l),color-mix(in srgb,var(--green) 4%,var(--card)))}
+  .lbx.r{background:linear-gradient(135deg,var(--red-l),color-mix(in srgb,var(--red) 4%,var(--card)))}
+}
 /* on/off switch */
 .switch2{width:52px;height:32px;border-radius:99px;background:var(--line);position:relative;flex:none;transition:background-color .2s ease}
 .switch2::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.25);transition:transform .22s cubic-bezier(.2,.8,.2,1)}
@@ -669,7 +705,7 @@ function toast(msg){
 
 /* ---------- view state ---------- */
 const now0 = new Date();
-const V = { tab:"home", y: now0.getFullYear(), m: now0.getMonth(), year: now0.getFullYear(), showAll:false, monthList:false };
+const V = { tab:"home", y: now0.getFullYear(), m: now0.getMonth(), year: now0.getFullYear(), showAll:false, monthList:false, heroBack:false };
 
 /* =========================================================
    Rendering
@@ -803,6 +839,7 @@ function afterRender(){
     if(ok && from !== to) countUp(el, from, to, el.dataset.fmt);
     prevVals.set(ck, to);
   });
+  setupReveal();
 }
 function animOut(id, done){        // slide an item away, then redraw
   const el = document.querySelector(`#main [data-id="${id}"]`);
@@ -837,6 +874,31 @@ function colourSplash(col){
 }
 // when the "rise" entrance animation ends, drop it so it does not lock the card's position (lets the tilt work)
 document.addEventListener("animationend", (e)=>{ if(e.animationName==="rise" && e.target.classList) e.target.classList.remove("rise"); });
+// month card flip: front (totals) <-> back (where the money went)
+let flipping = false;
+async function flipHero(){
+  if(flipping) return; flipping = true;
+  const h = document.querySelector("#main .hero.flipme");
+  try{
+    if(h && motionOK()) await h.animate([{transform:"perspective(900px) rotateY(0deg)"},{transform:"perspective(900px) rotateY(90deg)"}],{duration:170,easing:"ease-in"}).finished;
+    V.heroBack = !V.heroBack; render();
+    const n = document.querySelector("#main .hero.flipme");
+    if(n && motionOK()) await n.animate([{transform:"perspective(900px) rotateY(-90deg)"},{transform:"perspective(900px) rotateY(0deg)"}],{duration:260,easing:"cubic-bezier(.2,.8,.3,1.15)"}).finished;
+  } finally { flipping = false; }
+}
+// items further down the page slide in as you scroll to them
+let revealObs = null;
+function setupReveal(){
+  if(revealObs){ revealObs.disconnect(); revealObs = null; }
+  if(!motionOK() || !("IntersectionObserver" in window)) return;
+  const els = [...document.querySelectorAll("#main .day-h, #main .list > .item, #main .note-card, #main .card")].filter(el=>el.getBoundingClientRect().top > innerHeight);
+  if(!els.length) return;
+  revealObs = new IntersectionObserver((ents)=>{
+    ents.forEach(en=>{ if(!en.isIntersecting) return; const el = en.target; revealObs.unobserve(el);
+      el.classList.add("in"); setTimeout(()=>el.classList.remove("sr","in"), 650); });
+  }, {rootMargin:"0px 0px -8% 0px"});
+  els.forEach(el=>{ el.classList.add("sr"); revealObs.observe(el); });
+}
 // month card: gentle 3D tilt + colour glare under your finger
 document.addEventListener("pointermove", (e)=>{
   const h = e.target.closest && e.target.closest(".hero");
@@ -892,8 +954,8 @@ function confetti(){
 function itemHTML(e){
   const c = catById(e.cat), p = payById(e.pay);
   const s = [p.name, e.note].filter(Boolean).map(esc).join(" · ");
-  return `<button class="item ${e.id===V.flash?"flash":""}" data-act="edit" data-id="${e.id}">
-    <div class="ico" style="background:${hexA(c.color,.16)}">${esc(c.icon)}</div>
+  return `<button class="item ${e.id===V.flash?"flash":""}" data-act="edit" data-id="${e.id}" style="--cc:${c.color}">
+    <div class="ico" style="background:linear-gradient(135deg,${hexA(c.color,.32)},${hexA(c.color,.10)});box-shadow:inset 0 0 0 1px ${hexA(c.color,.28)}">${esc(c.icon)}</div>
     <div class="mid"><div class="t">${esc(c.name)}</div><div class="s">${s}</div></div>
     <div class="amt">${money(e.amount)}</div></button>`;
 }
@@ -904,13 +966,26 @@ function groupedList(list, limit){
   const flush = () => {
     if(cur===null) return;
     const dayTotal = sum(items.filter(e=>e.date===cur));
-    html += `<div class="day-h"><span>${esc(dayLabel(cur))}</span><span>${money(dayTotal)}</span></div><div class="list">${buf.join("")}</div>`;
+    html += `<div class="day-h${cur===todayStr()?" is-today":""}" data-day="${cur}"><span>${esc(dayLabel(cur))}</span><span class="dt">${money(dayTotal)}</span></div><div class="list">${buf.join("")}</div>`;
   };
   for(const e of shown){ if(e.date!==cur){ flush(); cur=e.date; buf=[]; } buf.push(itemHTML(e)); }
   flush();
   return { html, more: items.length - shown.length };
 }
 
+function heroBackCard(now, monthT){
+  const list = inMonth(now.getFullYear(), now.getMonth());
+  const by = {}; list.forEach(e=>{ by[e.cat] = (by[e.cat]||0) + e.amount; });
+  let rows = Object.entries(by).map(([id,v])=>({c:catById(id), v})).sort((a,b)=>b.v-a.v);
+  if(rows.length>5){ const rest = rows.slice(4).reduce((a,r)=>a+r.v,0); rows = rows.slice(0,4).concat([{c:{name:"Others", icon:"•", color:"#8A8F9C"}, v:rest}]); }
+  let h = `<div class="hero flipme flipside" data-act="flipHero" role="button" tabindex="0" aria-label="Tap to go back">
+    <span class="flip-ic" aria-hidden="true">↻</span>
+    <div class="label live">Where it went · ${MONTHS[now.getMonth()]}</div>`;
+  if(!monthT) return h + `<div class="empty" style="padding:22px 6px">Nothing spent yet this month.</div><div class="small muted">Tap the card to go back</div></div>`;
+  const ring = donut(rows.map(r=>({v:r.v, c:r.c.color, label:r.c.name})), "This month", ringMoney(monthT));
+  const legend = rows.map(r=>`<div class="lg"><i style="background:${r.c.color}"></i><span>${esc(r.c.icon)} ${esc(r.c.name)}</span><b>${money(r.v)} <small class="muted">${Math.round(r.v/monthT*100)}%</small></b></div>`).join("");
+  return h + `<div class="pov-top">${ring}<div class="pov-legend">${legend}</div></div><div class="small muted">Tap the card to go back</div></div>`;
+}
 function homeView(){
   const t = todayStr(), now = new Date();
   const todayT = sum(D.expenses.filter(e=>e.date===t));
@@ -926,13 +1001,10 @@ function homeView(){
       ${deferredPrompt?'<br><button class="link" data-act="install">Install now</button>':''}</div>
       <button class="x" data-act="hideInstall" aria-label="Hide">✕</button></div>`;
   }
-  // backup reminder
-  const lb = D.settings.lastBackup ? new Date(D.settings.lastBackup) : null;
-  if(D.expenses.length >= 5 && (!lb || (Date.now()-lb.getTime()) > 30*864e5)){
-    h += `<div class="banner"><div style="font-size:22px">💾</div><div class="small"><b>Time for a backup</b><br>
-      Your data lives only on this device. Save a backup file once a month.<br><button class="link" data-act="backup">Save backup now</button></div></div>`;
-  }
-  h += `<div class="hero">
+  if(V.heroBack) h += heroBackCard(now, monthT);
+  else {
+  h += `<div class="hero flipme" data-act="flipHero" role="button" tabindex="0" aria-label="Tap to see where your money went">
+    <span class="flip-ic" aria-hidden="true">↻</span>
     <div class="label live">${MONTHS[now.getMonth()]} ${now.getFullYear()}</div>
     <div class="big">${cnt(monthT,"h-month")}</div>`;
   if(bi.rows.length){
@@ -945,9 +1017,10 @@ function homeView(){
     }).join("") + (rows.length>4 ? `<div class="small muted" style="margin-top:6px">+${rows.length-4} more budgets in <button class="link" data-tab="month">Month</button></div>` : "") + `</div>`;
   }
   h += `<div class="minis">
-      <div class="mini coral"><div class="label">Today</div><div class="val">${cnt(todayT,"h-today")}</div></div>
-      <div class="mini teal"><div class="label">Year ${now.getFullYear()}</div><div class="val">${cnt(yearT,"h-year")}</div></div>
+      <button class="mini coral" data-act="goToday"><div class="label">Today ›</div><div class="val">${cnt(todayT,"h-today")}</div></button>
+      <button class="mini teal" data-tab="year"><div class="label">Year ${now.getFullYear()} ›</div><div class="val">${cnt(yearT,"h-year")}</div></button>
     </div></div>`;
+  }
   const ncr = sum(creditsIn(now.getFullYear(), now.getMonth())), nact = D.projects.filter(p=>!p.done).length;
   h += `<div class="tiles">
     <button class="tile" data-tab="credits"><div class="ti">💰</div><div class="tl">Credits</div><div class="tv ${ncr?"cg":""}">${ncr? "+"+rup(ncr) : "Add money in"}</div></button>
@@ -957,8 +1030,8 @@ function homeView(){
   if(pt.owedToMe || pt.iOwe){
     h += `<button class="card" data-act="openPeople" style="display:block;width:100%;text-align:left">
       <div class="row between" style="margin-bottom:10px"><b>Lend & Borrow</b><span class="small link">Open ›</span></div>
-      <div class="grid2"><div><div class="small muted">Others owe you</div><div class="cg" style="font-weight:800;font-size:18px">${cnt(pt.owedToMe,"h-owed")}</div></div>
-      <div><div class="small muted">You owe others</div><div class="cr" style="font-weight:800;font-size:18px">${cnt(pt.iOwe,"h-iowe")}</div></div></div>${splitBar(pt.owedToMe, pt.iOwe)}</button>`;
+      <div class="grid2"><div class="lbx g"><div class="small muted">Others owe you</div><div class="cg" style="font-weight:800;font-size:18px">${cnt(pt.owedToMe,"h-owed")}</div></div>
+      <div class="lbx r"><div class="small muted">You owe others</div><div class="cr" style="font-weight:800;font-size:18px">${cnt(pt.iOwe,"h-iowe")}</div></div></div>${splitBar(pt.owedToMe, pt.iOwe)}</button>`;
   }
   // Home shows only this month's entries. Older months are in the Month tab.
   const thisMonth = inMonth(now.getFullYear(), now.getMonth());
@@ -1177,7 +1250,7 @@ function openExpense(id){
       <input id="fAmt" inputmode="decimal" autocomplete="off" placeholder="0" value="${e? (e.amount/100) : ""}" aria-label="Amount"></div>
       <div class="small muted tip-plus" style="margin-top:4px">Tip: type 120+80 to add two amounts.</div></div>
     <div class="field"><label>Category</label><div class="chips" id="fCats">
-      ${D.categories.map(c=>`<button class="chip ${c.id===cat?"on":""}" data-cat="${c.id}"><span class="em">${esc(c.icon)}</span>${esc(c.name)}</button>`).join("")}
+      ${D.categories.map(c=>`<button class="chip ${c.id===cat?"on":""}" data-cat="${c.id}" style="--cc:${c.color}"><span class="em">${esc(c.icon)}</span>${esc(c.name)}</button>`).join("")}
     </div></div>
     <div class="field"><label>Paid with</label><div class="pills" id="fPays">
       ${D.payments.map(p=>`<button class="pill ${p.id===pay?"on":""}" data-pay="${p.id}">${esc(p.name)}</button>`).join("")}
@@ -1917,6 +1990,13 @@ document.addEventListener("click", async (ev)=>{
   const act = a.dataset.act;
   if(act==="edit") openExpense(a.dataset.id);
   else if(act==="showAll"){ V.showAll=true; render(); }
+  else if(act==="flipHero") flipHero();
+  else if(act==="goToday"){
+    const dh = document.querySelector(`#main .day-h[data-day="${todayStr()}"]`);
+    if(!dh){ toast("Nothing spent today 🎉"); return; }
+    dh.scrollIntoView({behavior: motionOK() ? "smooth" : "auto", block:"start"});
+    const l = dh.nextElementSibling; if(l && motionOK()) setTimeout(()=>l.querySelectorAll(".item").forEach((it,i)=>{ it.classList.remove("flash"); void it.offsetWidth; it.style.animationDelay=(i*70)+"ms"; it.classList.add("flash"); }), 350);
+  }
   else if(act==="lastMonth"){ const n=new Date(); V.y = n.getMonth()===0 ? n.getFullYear()-1 : n.getFullYear(); V.m = n.getMonth()===0 ? 11 : n.getMonth()-1; go("month"); }
   else if(act==="mPrev"){ animDir="r"; V.m--; if(V.m<0){V.m=11;V.y--;} render(); }
   else if(act==="mNext"){ animDir="l"; V.m++; if(V.m>11){V.m=0;V.y++;} render(); }
