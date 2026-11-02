@@ -960,11 +960,16 @@ function homeView(){
       <div class="grid2"><div><div class="small muted">Others owe you</div><div class="cg" style="font-weight:800;font-size:18px">${cnt(pt.owedToMe,"h-owed")}</div></div>
       <div><div class="small muted">You owe others</div><div class="cr" style="font-weight:800;font-size:18px">${cnt(pt.iOwe,"h-iowe")}</div></div></div>${splitBar(pt.owedToMe, pt.iOwe)}</button>`;
   }
+  // Home shows only this month's entries. Older months are in the Month tab.
+  const thisMonth = inMonth(now.getFullYear(), now.getMonth());
   if(!D.expenses.length){
     h += `<div class="card empty"><div class="e">🧾</div><p><b>No expenses yet</b><br>Tap the <b>+</b> button to add your first one.</p></div>`;
+  } else if(!thisMonth.length){
+    h += `<div class="card empty"><div class="e">🗓️</div><p><b>No expenses in ${MONTHS[now.getMonth()]} yet</b><br>Tap the <b>+</b> button to add one.<br>
+      Older months are in the <button class="link" data-act="lastMonth">Month</button> tab.</p></div>`;
   } else {
-    const g = groupedList(D.expenses, V.showAll ? 0 : 40);
-    h += `<div class="row between" style="margin-top:4px"><b>Recent</b><span class="small muted">${D.expenses.length} entries</span></div>${g.html}`;
+    const g = groupedList(thisMonth, V.showAll ? 0 : 40);
+    h += `<div class="row between" style="margin-top:4px"><b>This month</b><span class="small muted">${thisMonth.length} ${thisMonth.length===1?"entry":"entries"}</span></div>${g.html}`;
     if(g.more>0) h += `<div style="text-align:center;margin:14px"><button class="btn ghost" data-act="showAll">Show all (${g.more} more)</button></div>`;
   }
   return h;
@@ -1912,6 +1917,7 @@ document.addEventListener("click", async (ev)=>{
   const act = a.dataset.act;
   if(act==="edit") openExpense(a.dataset.id);
   else if(act==="showAll"){ V.showAll=true; render(); }
+  else if(act==="lastMonth"){ const n=new Date(); V.y = n.getMonth()===0 ? n.getFullYear()-1 : n.getFullYear(); V.m = n.getMonth()===0 ? 11 : n.getMonth()-1; go("month"); }
   else if(act==="mPrev"){ animDir="r"; V.m--; if(V.m<0){V.m=11;V.y--;} render(); }
   else if(act==="mNext"){ animDir="l"; V.m++; if(V.m>11){V.m=0;V.y++;} render(); }
   else if(act==="yPrev"){ animDir="r"; V.year--; render(); }
@@ -1976,7 +1982,16 @@ let deferredPrompt = null;
 window.addEventListener("beforeinstallprompt",(e)=>{ e.preventDefault(); deferredPrompt=e; if(V.tab==="home") render(); });
 window.addEventListener("appinstalled",()=>{ D.settings.hideInstall=true; save(); render(); toast("App installed"); });
 // refresh "today" when the app comes back after midnight
-document.addEventListener("visibilitychange",()=>{ if(!document.hidden && !closeSheet) render(); });
+let shownMonth = now0.getFullYear()*12 + now0.getMonth();
+function checkNewMonth(){   // if a new month started while the app was open, follow it
+  const n = new Date(), k = n.getFullYear()*12 + n.getMonth();
+  if(k===shownMonth) return;
+  const oy = Math.floor(shownMonth/12), om = shownMonth%12;
+  if(V.y===oy && V.m===om){ V.y = n.getFullYear(); V.m = n.getMonth(); }
+  if(V.year===oy) V.year = n.getFullYear();
+  shownMonth = k;
+}
+document.addEventListener("visibilitychange",()=>{ if(!document.hidden){ checkNewMonth(); if(!closeSheet) render(); } });
 
 /* ---------- no pinch-zoom on phones (feels like a normal app) ---------- */
 ["gesturestart","gesturechange","gestureend"].forEach(t=>document.addEventListener(t,(e)=>e.preventDefault(),{passive:false}));   // iPhone Safari pinch
